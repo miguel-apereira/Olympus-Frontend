@@ -14,10 +14,23 @@ export interface EpicGame {
   isFavorite?: boolean
 }
 
-async function fileExists(filePath: string): Promise<boolean> {
+interface LauncherInstalledGame {
+  InstallLocation: string
+  NamespaceId: string
+  ItemId: string
+  ArtifactId: string
+  AppVersion: string
+  AppName: string
+}
+
+interface LauncherInstalledData {
+  InstallationList: LauncherInstalledGame[]
+}
+
+async function dirExists(dirPath: string): Promise<boolean> {
   try {
-    await fs.access(filePath)
-    return true
+    const stats = await fs.stat(dirPath)
+    return stats.isDirectory()
   } catch {
     return false
   }
@@ -26,7 +39,8 @@ async function fileExists(filePath: string): Promise<boolean> {
 export async function getEpicGames(): Promise<EpicGame[]> {
   log.info('Detecting Epic games...')
   const games: EpicGame[] = []
-  
+  const foundInstallLocations = new Set<string>()
+
   const epicManifestPaths = [
     path.join(process.env['ProgramData'] || 'C:\\ProgramData', 'Epic', 'EpicGamesLauncher', 'Data', 'Manifests')
   ]
@@ -44,21 +58,25 @@ export async function getEpicGames(): Promise<EpicGame[]> {
             try {
               const manifest = JSON.parse(content)
               const displayName = manifest.DisplayName || manifest.InstallLocation?.split('\\').pop()
-              const installLocation = manifest.InstallLocation
-              const launchExecutable = manifest.LaunchExecutable
+              const installLocation = manifest.InstallLocation?.replace(/\//g, '\\')
+              const appName = manifest.AppName
               
-              if (displayName && installLocation && launchExecutable) {
-                const exePath = path.join(installLocation, launchExecutable)
-                
-                if (await fileExists(exePath)) {
+              if (displayName && installLocation) {
+                if (await dirExists(installLocation)) {
+                  foundInstallLocations.add(installLocation)
+                  
+                  const launchUri = appName 
+                    ? `com.epicgames.launcher://apps/${appName}?action=launch&silent=true`
+                    : installLocation
+
                   games.push({
                     id: `epic-${displayName.toLowerCase().replace(/\s+/g, '-')}`,
                     name: displayName,
-                    executablePath: exePath,
+                    executablePath: launchUri,
                     store: 'epic',
                     installLocation: installLocation
                   })
-                  log.info(`Found Epic game: ${displayName}`)
+                  log.info(`Found Epic game (manifest): ${displayName}`)
                 }
               }
             } catch (e) {
@@ -69,6 +87,46 @@ export async function getEpicGames(): Promise<EpicGame[]> {
       } catch (e) {
         log.debug('Could not read Epic manifest directory:', manifestDir)
       }
+    }
+
+    const launcherDatPath = path.join(
+      process.env['ProgramData'] || 'C:\\ProgramData',
+      'Epic',
+      'UnrealEngineLauncher',
+      'LauncherInstalled.dat'
+    )
+
+    try {
+      const datContent = await fs.readFile(launcherDatPath, 'utf-8')
+      const launcherData: LauncherInstalledData = JSON.parse(datContent)
+      
+      if (launcherData.InstallationList) {
+        for (const installed of launcherData.InstallationList) {
+          const installLocation = installed.InstallLocation?.replace(/\//g, '\\')
+          const appName = installed.AppName
+          
+          if (!installLocation || !appName) continue
+
+          if (foundInstallLocations.has(installLocation)) continue
+
+          if (await dirExists(installLocation)) {
+            const launchUri = `com.epicgames.launcher://apps/${appName}?action=launch&silent=true`
+            
+            const displayName = appName
+
+            games.push({
+              id: `epic-${appName.toLowerCase().replace(/\s+/g, '-')}`,
+              name: displayName,
+              executablePath: launchUri,
+              store: 'epic',
+              installLocation: installLocation
+            })
+            log.info(`Found Epic game (dat): ${displayName}`)
+          }
+        }
+      }
+    } catch (e) {
+      log.debug('Could not read LauncherInstalled.dat:', e)
     }
 
     log.info(`Found ${games.length} Epic games`)

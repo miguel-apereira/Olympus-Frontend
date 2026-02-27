@@ -8,6 +8,7 @@ interface GameGridProps {
   onLaunch: (game: GameInfo) => void
   onRemove: (gameId: string) => void
   onToggleFavorite: (gameId: string) => void
+  onEdit: (game: GameInfo) => void
   isEmpty: boolean
   isScanning: boolean
   onScan: () => void
@@ -19,6 +20,7 @@ export default function GameGrid({
   onLaunch, 
   onRemove, 
   onToggleFavorite,
+  onEdit,
   isEmpty,
   isScanning,
   onScan,
@@ -116,6 +118,7 @@ export default function GameGrid({
             onLaunch={onLaunch}
             onRemove={onRemove}
             onToggleFavorite={onToggleFavorite}
+            onEdit={onEdit}
             themeColors={themeColors}
           />
         ))}

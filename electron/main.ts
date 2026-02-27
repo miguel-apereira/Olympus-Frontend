@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, shell, dialog, globalShortcut } from 'electron'
 import path from 'path'
 import fs from 'fs'
+import { exec } from 'child_process'
 import log from 'electron-log'
 import Store from 'electron-store'
 import { getUserDrives } from './getUserDrives'
@@ -107,9 +108,46 @@ app.on('window-all-closed', () => {
   }
 })
 
+const isDev = !app.isPackaged
+
+const placeholderGames: GameInfo[] = isDev ? [
+  {
+    id: 'dev-steam-1',
+    name: 'Test Steam Game',
+    executablePath: 'steam://rungameid/123456',
+    store: 'steam',
+    installLocation: 'C:\\Games\\TestSteam',
+    lastPlayed: new Date().toISOString(),
+    playCount: 5,
+    isFavorite: true,
+    appid: '123456'
+  },
+  {
+    id: 'dev-epic-1',
+    name: 'Test Epic Game',
+    executablePath: 'C:\\Games\\TestEpic\\game.exe',
+    store: 'epic',
+    installLocation: 'C:\\Games\\TestEpic',
+    lastPlayed: new Date(Date.now() - 86400000).toISOString(),
+    playCount: 2,
+    isFavorite: false
+  },
+  {
+    id: 'dev-custom-1',
+    name: 'Test Custom Game',
+    executablePath: 'C:\\Games\\Custom\\game.exe',
+    store: 'custom',
+    installLocation: 'C:\\Games\\Custom'
+  }
+] : []
+
 ipcMain.handle('get-games', async () => {
   log.info('IPC: get-games called')
-  return store.get('games')
+  const games = store.get('games') as GameInfo[]
+  if (isDev) {
+    return [...placeholderGames, ...games]
+  }
+  return games
 })
 
 ipcMain.handle('save-games', async (_, games: GameInfo[]) => {
@@ -138,12 +176,16 @@ ipcMain.handle('scan-games', async (event, drives?: string[]) => {
     const newGames = allDetectedGames.filter(g => !existingIds.has(g.id))
 
     const updatedGames = [...existingGames, ...newGames]
-    store.set('games', updatedGames)
+    
+    const realGames = updatedGames.filter(g => !g.id.startsWith('dev-'))
+    store.set('games', realGames)
+
+    const returnedGames = isDev ? [...placeholderGames, ...updatedGames] : updatedGames
 
     sendProgress(newGames.length, newGames.length, '', 'complete')
     
     log.info(`Scan complete. Found ${newGames.length} new games`)
-    return { games: updatedGames, newCount: newGames.length }
+    return { games: returnedGames, newCount: newGames.length }
   } catch (error) {
     log.error('Error scanning games:', error)
     throw error
@@ -185,9 +227,24 @@ ipcMain.handle('launch-game', async (_, game: GameInfo) => {
   log.info('IPC: launch-game called', game.name)
   try {
     if (game.store === 'steam' && game.appid) {
+      const steamPath = await getSteamInstallPath()
+      if (steamPath) {
+        const steamExe = path.join(steamPath, 'steam.exe')
+        log.info(`Launching Steam with -silent: ${steamExe}`)
+        exec(`"${steamExe}" -silent`)
+        
+        await new Promise(resolve => setTimeout(resolve, 2000))
+      }
+      
       const steamUrl = getSteamLaunchUrl(game.appid)
       log.info(`Launching Steam game via: ${steamUrl}`)
       await shell.openExternal(steamUrl)
+    } else if (game.store === 'epic' || game.executablePath.startsWith('com.epicgames')) {
+      const epicUrl = game.executablePath.startsWith('com.epicgames') 
+        ? game.executablePath 
+        : game.executablePath
+      log.info(`Launching Epic game via: ${epicUrl}`)
+      await shell.openExternal(epicUrl)
     } else {
       await shell.openPath(game.executablePath)
     }

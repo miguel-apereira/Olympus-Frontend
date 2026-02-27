@@ -5,6 +5,7 @@ import AddGameModal from './components/AddGameModal'
 import SettingsView from './components/SettingsView'
 import TitleBar from './components/TitleBar'
 import ScanProgressModal from './components/ScanProgressModal'
+import EditGameModal from './components/EditGameModal'
 import { GameInfo, ViewType, Settings } from './types'
 import { project, labels, themes } from './config'
 
@@ -22,6 +23,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [editingGame, setEditingGame] = useState<GameInfo | null>(null)
   const [settings, setSettings] = useState<Settings>({ theme: 'dark', scanOnStartup: true })
   const [isScanning, setIsScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -97,6 +99,16 @@ function App() {
       setGames(prev => prev.filter(g => g.id !== gameId))
     } catch (error) {
       console.error('Error removing game:', error)
+    }
+  }
+
+  const handleEditGame = async (updatedGame: GameInfo) => {
+    try {
+      await window.electronAPI.saveGames(games.map(g => g.id === updatedGame.id ? updatedGame : g))
+      setGames(prev => prev.map(g => g.id === updatedGame.id ? updatedGame : g))
+      setEditingGame(null)
+    } catch (error) {
+      console.error('Error editing game:', error)
     }
   }
 
@@ -192,6 +204,11 @@ function App() {
     )
   }
 
+  const handleViewChange = (view: ViewType) => {
+    setCurrentView(view)
+    setSearchQuery('')
+  }
+
   const appStyle = {
     '--color-bg': themeColors.bg,
     '--color-surface': themeColors.surface,
@@ -207,7 +224,7 @@ function App() {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar 
           currentView={currentView}
-          onViewChange={setCurrentView}
+          onViewChange={handleViewChange}
           gameCounts={{
             all: games.length,
             favorites: games.filter(g => g.isFavorite).length,
@@ -288,10 +305,12 @@ function App() {
               </header>
 
               <GameGrid
+                key={currentView}
                 games={filteredGames}
                 onLaunch={handleLaunchGame}
                 onRemove={handleRemoveGame}
                 onToggleFavorite={handleToggleFavorite}
+                onEdit={setEditingGame}
                 isEmpty={filteredGames.length === 0}
                 isScanning={isScanning}
                 onScan={scanForGames}
@@ -306,6 +325,14 @@ function App() {
         <AddGameModal
           onClose={() => setShowAddModal(false)}
           onAdd={handleAddGame}
+        />
+      )}
+
+      {editingGame && (
+        <EditGameModal
+          game={editingGame}
+          onClose={() => setEditingGame(null)}
+          onSave={handleEditGame}
         />
       )}
 

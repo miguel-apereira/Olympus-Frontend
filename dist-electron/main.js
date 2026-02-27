@@ -1,1 +1,619 @@
-"use strict";const c=require("electron"),u=require("path"),y=require("fs"),t=require("electron-log"),D=require("electron-store"),C=require("child_process");async function I(){t.info("Getting user drives...");const e=[];if(process.platform==="win32"){const a="CDEFGHIJKLMNOPQRSTUVWXYZ".split("");for(const s of a){const n=`${s}:\\`;try{y.accessSync(n,y.constants.R_OK),e.push(n)}catch{}}}else e.push("/");return t.info(`Found drives: ${e.join(", ")}`),e}async function S(e){try{return await y.promises.access(e),!0}catch{return!1}}async function M(){return new Promise(e=>{C.exec('reg query "HKCU\\Software\\Valve\\Steam" /v InstallPath',{windowsHide:!0},(a,s)=>{if(a)C.exec('reg query "HKLM\\SOFTWARE\\WOW6432Node\\Valve\\Steam" /v InstallPath',{windowsHide:!0},(n,i)=>{if(n)t.debug("Could not find Steam in registry (HKCU and HKLM)"),e(null);else{const d=i.match(/InstallPath\s+REG_SZ\s+(.+)/);if(d){const l=d[1].trim().replace(/\//g,"\\");t.info(`Found Steam in HKLM: ${l}`),e(l)}else e(null)}});else{const n=s.match(/InstallPath\s+REG_SZ\s+(.+)/);if(n){const i=n[1].trim().replace(/\//g,"\\");t.info(`Found Steam in HKCU: ${i}`),e(i)}else e(null)}})})}async function v(e){try{return await y.promises.readFile(e,"utf-8")}catch{return""}}function x(e){const a={},s=/"(\w+)"\s+"([^"]*)"/g;let n;for(;(n=s.exec(e))!==null;)a[n[1]]=n[2];return a}function F(e){const a={},s=/"(\w+)"\s*\{([^}]*)\}/g;let n;for(;(n=s.exec(e))!==null;){const d=n[1],l=n[2];a[d]=x(l);const m=/"(\w+)"\s*\{([^}]*)\}/g;let o;const f=a[d];for(;(o=m.exec(l))!==null;)f[o[1]]=x(o[2])}const i=x(e);for(const[d,l]of Object.entries(i))d in a||(a[d]=l);return a}async function L(e){const a=[],s=[u.join(e,"steamapps","libraryfolders.vdf"),u.join(e,"config","libraryfolders.vdf")];for(const n of s)if(await S(n))try{const i=await v(n);t.info(`Parsing libraryfolders.vdf at: ${n}`);const d=F(i);t.info("Parsed VDF content:",JSON.stringify(d).substring(0,500));const l=o=>{const f=[];for(const[p,g]of Object.entries(o))if(p==="path"&&typeof g=="string"){let w=g.replace(/\\\\/g,"\\").replace(/\//g,"\\");w.endsWith("\\")||(w+="\\"),f.push(w)}else typeof g=="object"&&g!==null&&f.push(...l(g));return f},m=l(d);t.info(`Extracted paths: ${m.join(", ")}`);for(const o of m)a.includes(o)||(a.push(o),t.info(`Found library: ${o}`))}catch(i){t.warn(`Could not parse libraryfolders.vdf at ${n}:`,i)}return a}async function _(e){const a=[],s=u.join(e,"steamapps");try{if(!await S(s))return a;const n=await y.promises.readdir(s);for(const i of n)if(i.startsWith("appmanifest_")&&i.endsWith(".acf")){const d=u.join(s,i),l=await v(d);try{const o=F(l);if(o.AppState){const f=o.AppState.appid||"",p=o.AppState.name||"",g=o.AppState.installdir||"",w=o.AppState.LastPlayed||"";if(p&&g){const P=u.join(s,"common",g);if(await S(P)){const j=w?new Date(parseInt(w)*1e3).toISOString():void 0;a.push({id:`steam-${f}`,name:p,executablePath:`steam://rungameid/${f}`,store:"steam",installLocation:P,lastPlayed:j,appid:f}),t.info(`Found game: ${p} (${f}) at ${P}`)}else t.warn(`Game folder not found for ${p}: ${P}`)}}}catch(m){t.warn(`Could not parse ACF file ${i}:`,m)}}}catch(n){t.warn(`Could not read steam library at ${e}:`,n)}return a}async function G(e){t.info("Detecting Steam games...");const a=[],s=new Set;try{let n=await M();if(t.info(`Steam from registry: ${n}`),!n&&e&&e.length>0){t.info("Searching for Steam on drives...");for(const l of e){const m=[u.join(l,"Program Files (x86)","Steam"),u.join(l,"Program Files","Steam"),u.join(l,"Steam")];for(const o of m){const f=u.join(o,"steamapps"),p=await S(f);if(t.info(`Checking ${f}: ${p}`),p){n=o,t.info(`Found Steam at: ${o}`);break}}if(n)break}}if(!n)return t.info("Steam installation not found"),a;t.info(`Steam path: ${n}`);const i=await L(n),d=u.join(n,"steamapps");await S(d)&&i.unshift(n.replace(/\\$/,"")),t.info(`Total libraries to scan: ${i.length}`);for(const l of i){if(s.has(l))continue;s.add(l),t.info(`Scanning library: ${l}`);const m=await _(l);t.info(`Found ${m.length} games in ${l}`),a.push(...m)}t.info(`Found ${a.length} Steam games`)}catch(n){t.error("Error detecting Steam games:",n)}return a}function R(e){return`steam://rungameid/${e}`}async function A(e){try{return await y.promises.access(e),!0}catch{return!1}}async function O(){var s;t.info("Detecting Epic games...");const e=[],a=[u.join(process.env.ProgramData||"C:\\ProgramData","Epic","EpicGamesLauncher","Data","Manifests")];try{for(const n of a)try{const i=await y.promises.readdir(n);for(const d of i)if(d.endsWith(".item")){const l=u.join(n,d),m=await y.promises.readFile(l,"utf-8");try{const o=JSON.parse(m),f=o.DisplayName||((s=o.InstallLocation)==null?void 0:s.split("\\").pop()),p=o.InstallLocation,g=o.LaunchExecutable;if(f&&p&&g){const w=u.join(p,g);await A(w)&&(e.push({id:`epic-${f.toLowerCase().replace(/\s+/g,"-")}`,name:f,executablePath:w,store:"epic",installLocation:p}),t.info(`Found Epic game: ${f}`))}}catch{t.debug("Could not parse epic manifest:",d)}}}catch{t.debug("Could not read Epic manifest directory:",n)}t.info(`Found ${e.length} Epic games`)}catch(n){t.error("Error detecting Epic games:",n)}return e}t.transports.file.level="info";t.transports.console.level="debug";t.info("Application starting...");c.app.disableHardwareAcceleration();process.on("uncaughtException",e=>{t.error("Uncaught Exception:",e)});process.on("unhandledRejection",e=>{t.error("Unhandled Rejection:",e)});const $=u.join(c.app.getPath("userData"),"config");y.existsSync($)||y.mkdirSync($,{recursive:!0});const h=new D({cwd:$,name:"settings",defaults:{games:[],settings:{theme:"dark",scanOnStartup:!0}}});let r=null;const b=process.env.VITE_DEV_SERVER_URL;function E(){t.info("Creating main window..."),r=new c.BrowserWindow({width:1280,height:800,minWidth:900,minHeight:600,backgroundColor:"#0f0f0f",webPreferences:{preload:u.join(__dirname,"preload.js"),nodeIntegration:!1,contextIsolation:!0,sandbox:!1},frame:!1,titleBarStyle:"hidden",show:!1}),r.once("ready-to-show",()=>{t.info("Window ready to show"),r==null||r.show(),b&&(r==null||r.webContents.openDevTools())}),b?(t.info("Loading dev server URL:",b),r.loadURL(b)):(t.info("Loading production build"),r.loadFile(u.join(__dirname,"../dist/index.html"))),r.on("closed",()=>{r=null})}c.app.whenReady().then(()=>{t.info("App ready"),E(),c.globalShortcut.register("CommandOrControl+Shift+I",()=>{r==null||r.webContents.toggleDevTools()}),c.app.on("activate",()=>{c.BrowserWindow.getAllWindows().length===0&&E()})});c.app.on("window-all-closed",()=>{t.info("All windows closed"),process.platform!=="darwin"&&c.app.quit()});c.ipcMain.handle("get-games",async()=>(t.info("IPC: get-games called"),h.get("games")));c.ipcMain.handle("save-games",async(e,a)=>(t.info("IPC: save-games called, count:",a.length),h.set("games",a),!0));c.ipcMain.handle("scan-games",async(e,a)=>{t.info("IPC: scan-games called",a?`with drives: ${a.join(", ")}`:"with default drives");try{const s=(p,g,w,P)=>{e.sender.send("scan-progress",{current:p,total:g,currentGame:w,store:P})},n=h.get("games"),i=new Set(n.map(p=>p.id));s(0,0,"","steam");const d=await G(a);s(0,0,"","epic");const l=await O(),o=[...d,...l].filter(p=>!i.has(p.id)),f=[...n,...o];return h.set("games",f),s(o.length,o.length,"","complete"),t.info(`Scan complete. Found ${o.length} new games`),{games:f,newCount:o.length}}catch(s){throw t.error("Error scanning games:",s),s}});c.ipcMain.handle("get-drives",async()=>{t.info("IPC: get-drives called");try{return await I()}catch(e){throw t.error("Error getting drives:",e),e}});c.ipcMain.handle("add-game",async(e,a)=>{t.info("IPC: add-game called",a.name);const s=h.get("games"),n={...a,id:`custom-${Date.now()}-${Math.random().toString(36).substr(2,9)}`};return s.push(n),h.set("games",s),n});c.ipcMain.handle("remove-game",async(e,a)=>{t.info("IPC: remove-game called",a);const n=h.get("games").filter(i=>i.id!==a);return h.set("games",n),!0});c.ipcMain.handle("launch-game",async(e,a)=>{t.info("IPC: launch-game called",a.name);try{if(a.store==="steam"&&a.appid){const i=R(a.appid);t.info(`Launching Steam game via: ${i}`),await c.shell.openExternal(i)}else await c.shell.openPath(a.executablePath);const n=h.get("games").map(i=>i.id===a.id?{...i,lastPlayed:new Date().toISOString(),playCount:(i.playCount||0)+1}:i);return h.set("games",n),t.info("Game launched successfully:",a.name),!0}catch(s){throw t.error("Error launching game:",s),s}});c.ipcMain.handle("select-executable",async()=>{t.info("IPC: select-executable called");const e=await c.dialog.showOpenDialog({properties:["openFile"],filters:[{name:"Executables",extensions:["exe","lnk","bat","cmd"]},{name:"All Files",extensions:["*"]}]});return e.canceled||e.filePaths.length===0?null:e.filePaths[0]});c.ipcMain.handle("select-image",async()=>{t.info("IPC: select-image called");const e=await c.dialog.showOpenDialog({properties:["openFile"],filters:[{name:"Images",extensions:["png","jpg","jpeg","webp","gif"]}]});return e.canceled||e.filePaths.length===0?null:e.filePaths[0]});c.ipcMain.handle("get-settings",async()=>h.get("settings"));c.ipcMain.handle("save-settings",async(e,a)=>(h.set("settings",a),!0));c.ipcMain.handle("window-minimize",()=>{r==null||r.minimize()});c.ipcMain.handle("window-maximize",()=>{r!=null&&r.isMaximized()?r.unmaximize():r==null||r.maximize()});c.ipcMain.handle("window-close",()=>{r==null||r.close()});c.ipcMain.handle("window-is-maximized",()=>(r==null?void 0:r.isMaximized())??!1);t.info("Main process initialized");
+"use strict";
+const electron = require("electron");
+const path = require("path");
+const fs = require("fs");
+const child_process = require("child_process");
+const log = require("electron-log");
+const Store = require("electron-store");
+async function getUserDrives() {
+  log.info("Getting user drives...");
+  const drives = [];
+  if (process.platform === "win32") {
+    const letters = "CDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    for (const letter of letters) {
+      const drivePath = `${letter}:\\`;
+      try {
+        fs.accessSync(drivePath, fs.constants.R_OK);
+        drives.push(drivePath);
+      } catch {
+      }
+    }
+  } else {
+    drives.push("/");
+  }
+  log.info(`Found drives: ${drives.join(", ")}`);
+  return drives;
+}
+async function fileExists(filePath) {
+  try {
+    await fs.promises.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+async function getSteamInstallPath() {
+  return new Promise((resolve) => {
+    child_process.exec(
+      'reg query "HKCU\\Software\\Valve\\Steam" /v InstallPath',
+      { windowsHide: true },
+      (error, stdout) => {
+        if (error) {
+          child_process.exec(
+            'reg query "HKLM\\SOFTWARE\\WOW6432Node\\Valve\\Steam" /v InstallPath',
+            { windowsHide: true },
+            (err, out) => {
+              if (err) {
+                log.debug("Could not find Steam in registry (HKCU and HKLM)");
+                resolve(null);
+              } else {
+                const match = out.match(/InstallPath\s+REG_SZ\s+(.+)/);
+                if (match) {
+                  const steamPath = match[1].trim().replace(/\//g, "\\");
+                  log.info(`Found Steam in HKLM: ${steamPath}`);
+                  resolve(steamPath);
+                } else {
+                  resolve(null);
+                }
+              }
+            }
+          );
+        } else {
+          const match = stdout.match(/InstallPath\s+REG_SZ\s+(.+)/);
+          if (match) {
+            const steamPath = match[1].trim().replace(/\//g, "\\");
+            log.info(`Found Steam in HKCU: ${steamPath}`);
+            resolve(steamPath);
+          } else {
+            resolve(null);
+          }
+        }
+      }
+    );
+  });
+}
+async function readFileContent(filePath) {
+  try {
+    return await fs.promises.readFile(filePath, "utf-8");
+  } catch {
+    return "";
+  }
+}
+function parseVDFKeyValue(content) {
+  const result = {};
+  const regex = /"(\w+)"\s+"([^"]*)"/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    result[match[1]] = match[2];
+  }
+  return result;
+}
+function parseVDFObject(content) {
+  const result = {};
+  const blockRegex = /"(\w+)"\s*\{([^}]*)\}/g;
+  let blockMatch;
+  while ((blockMatch = blockRegex.exec(content)) !== null) {
+    const blockName = blockMatch[1];
+    const blockContent = blockMatch[2];
+    result[blockName] = parseVDFKeyValue(blockContent);
+    const nestedBlockRegex = /"(\w+)"\s*\{([^}]*)\}/g;
+    let nestedMatch;
+    const nestedContent = result[blockName];
+    while ((nestedMatch = nestedBlockRegex.exec(blockContent)) !== null) {
+      nestedContent[nestedMatch[1]] = parseVDFKeyValue(nestedMatch[2]);
+    }
+  }
+  const simpleProps = parseVDFKeyValue(content);
+  for (const [key, value] of Object.entries(simpleProps)) {
+    if (!(key in result)) {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+async function parseLibraryFoldersVDF(steamPath) {
+  const libraryPaths = [];
+  const libraryFoldersPaths = [
+    path.join(steamPath, "steamapps", "libraryfolders.vdf"),
+    path.join(steamPath, "config", "libraryfolders.vdf")
+  ];
+  for (const libraryFoldersPath of libraryFoldersPaths) {
+    if (!await fileExists(libraryFoldersPath)) continue;
+    try {
+      const content = await readFileContent(libraryFoldersPath);
+      log.info(`Parsing libraryfolders.vdf at: ${libraryFoldersPath}`);
+      const parsed = parseVDFObject(content);
+      log.info("Parsed VDF content:", JSON.stringify(parsed).substring(0, 500));
+      const extractPaths = (obj) => {
+        const paths = [];
+        for (const [key, value] of Object.entries(obj)) {
+          if (key === "path" && typeof value === "string") {
+            let cleanPath = value.replace(/\\\\/g, "\\").replace(/\//g, "\\");
+            if (!cleanPath.endsWith("\\")) cleanPath += "\\";
+            paths.push(cleanPath);
+          } else if (typeof value === "object" && value !== null) {
+            paths.push(...extractPaths(value));
+          }
+        }
+        return paths;
+      };
+      const extractedPaths = extractPaths(parsed);
+      log.info(`Extracted paths: ${extractedPaths.join(", ")}`);
+      for (const p of extractedPaths) {
+        if (!libraryPaths.includes(p)) {
+          libraryPaths.push(p);
+          log.info(`Found library: ${p}`);
+        }
+      }
+    } catch (e) {
+      log.warn(`Could not parse libraryfolders.vdf at ${libraryFoldersPath}:`, e);
+    }
+  }
+  return libraryPaths;
+}
+async function findSteamGamesInLibrary(libraryPath) {
+  const games = [];
+  const steamAppsPath = path.join(libraryPath, "steamapps");
+  try {
+    if (!await fileExists(steamAppsPath)) {
+      return games;
+    }
+    const files = await fs.promises.readdir(steamAppsPath);
+    for (const file of files) {
+      if (file.startsWith("appmanifest_") && file.endsWith(".acf")) {
+        const manifestPath = path.join(steamAppsPath, file);
+        const content = await readFileContent(manifestPath);
+        try {
+          const parsed = parseVDFObject(content);
+          const appState = parsed;
+          if (appState.AppState) {
+            const appid = appState.AppState.appid || "";
+            const gameName = appState.AppState.name || "";
+            const installDir = appState.AppState.installdir || "";
+            const lastPlayedTimestamp = appState.AppState.LastPlayed || "";
+            if (gameName && installDir) {
+              const installPath = path.join(steamAppsPath, "common", installDir);
+              const exists = await fileExists(installPath);
+              if (exists) {
+                const lastPlayed = lastPlayedTimestamp ? new Date(parseInt(lastPlayedTimestamp) * 1e3).toISOString() : void 0;
+                games.push({
+                  id: `steam-${appid}`,
+                  name: gameName,
+                  executablePath: `steam://rungameid/${appid}`,
+                  store: "steam",
+                  installLocation: installPath,
+                  lastPlayed,
+                  appid
+                });
+                log.info(`Found game: ${gameName} (${appid}) at ${installPath}`);
+              } else {
+                log.warn(`Game folder not found for ${gameName}: ${installPath}`);
+              }
+            }
+          }
+        } catch (e) {
+          log.warn(`Could not parse ACF file ${file}:`, e);
+        }
+      }
+    }
+  } catch (e) {
+    log.warn(`Could not read steam library at ${libraryPath}:`, e);
+  }
+  return games;
+}
+async function getSteamGames(drives) {
+  log.info("Detecting Steam games...");
+  const games = [];
+  const scannedPaths = /* @__PURE__ */ new Set();
+  try {
+    let steamPath = await getSteamInstallPath();
+    log.info(`Steam from registry: ${steamPath}`);
+    if (!steamPath && drives && drives.length > 0) {
+      log.info("Searching for Steam on drives...");
+      for (const drive of drives) {
+        const possiblePaths = [
+          path.join(drive, "Program Files (x86)", "Steam"),
+          path.join(drive, "Program Files", "Steam"),
+          path.join(drive, "Steam")
+        ];
+        for (const p of possiblePaths) {
+          const steamappsPath = path.join(p, "steamapps");
+          const exists = await fileExists(steamappsPath);
+          log.info(`Checking ${steamappsPath}: ${exists}`);
+          if (exists) {
+            steamPath = p;
+            log.info(`Found Steam at: ${p}`);
+            break;
+          }
+        }
+        if (steamPath) break;
+      }
+    }
+    if (!steamPath) {
+      log.info("Steam installation not found");
+      return games;
+    }
+    log.info(`Steam path: ${steamPath}`);
+    const libraryPaths = await parseLibraryFoldersVDF(steamPath);
+    const mainSteamAppsPath = path.join(steamPath, "steamapps");
+    if (await fileExists(mainSteamAppsPath)) {
+      libraryPaths.unshift(steamPath.replace(/\\$/, ""));
+    }
+    log.info(`Total libraries to scan: ${libraryPaths.length}`);
+    for (const libPath of libraryPaths) {
+      if (scannedPaths.has(libPath)) continue;
+      scannedPaths.add(libPath);
+      log.info(`Scanning library: ${libPath}`);
+      const libraryGames = await findSteamGamesInLibrary(libPath);
+      log.info(`Found ${libraryGames.length} games in ${libPath}`);
+      games.push(...libraryGames);
+    }
+    log.info(`Found ${games.length} Steam games`);
+  } catch (error) {
+    log.error("Error detecting Steam games:", error);
+  }
+  return games;
+}
+function getSteamLaunchUrl(appid) {
+  return `steam://rungameid/${appid}`;
+}
+async function dirExists(dirPath) {
+  try {
+    const stats = await fs.promises.stat(dirPath);
+    return stats.isDirectory();
+  } catch {
+    return false;
+  }
+}
+async function getEpicGames() {
+  var _a, _b, _c;
+  log.info("Detecting Epic games...");
+  const games = [];
+  const foundInstallLocations = /* @__PURE__ */ new Set();
+  const epicManifestPaths = [
+    path.join(process.env["ProgramData"] || "C:\\ProgramData", "Epic", "EpicGamesLauncher", "Data", "Manifests")
+  ];
+  try {
+    for (const manifestDir of epicManifestPaths) {
+      try {
+        const files = await fs.promises.readdir(manifestDir);
+        for (const file of files) {
+          if (file.endsWith(".item")) {
+            const manifestPath = path.join(manifestDir, file);
+            const content = await fs.promises.readFile(manifestPath, "utf-8");
+            try {
+              const manifest = JSON.parse(content);
+              const displayName = manifest.DisplayName || ((_a = manifest.InstallLocation) == null ? void 0 : _a.split("\\").pop());
+              const installLocation = (_b = manifest.InstallLocation) == null ? void 0 : _b.replace(/\//g, "\\");
+              const appName = manifest.AppName;
+              if (displayName && installLocation) {
+                if (await dirExists(installLocation)) {
+                  foundInstallLocations.add(installLocation);
+                  const launchUri = appName ? `com.epicgames.launcher://apps/${appName}?action=launch&silent=true` : installLocation;
+                  games.push({
+                    id: `epic-${displayName.toLowerCase().replace(/\s+/g, "-")}`,
+                    name: displayName,
+                    executablePath: launchUri,
+                    store: "epic",
+                    installLocation
+                  });
+                  log.info(`Found Epic game (manifest): ${displayName}`);
+                }
+              }
+            } catch (e) {
+              log.debug("Could not parse epic manifest:", file);
+            }
+          }
+        }
+      } catch (e) {
+        log.debug("Could not read Epic manifest directory:", manifestDir);
+      }
+    }
+    const launcherDatPath = path.join(
+      process.env["ProgramData"] || "C:\\ProgramData",
+      "Epic",
+      "UnrealEngineLauncher",
+      "LauncherInstalled.dat"
+    );
+    try {
+      const datContent = await fs.promises.readFile(launcherDatPath, "utf-8");
+      const launcherData = JSON.parse(datContent);
+      if (launcherData.InstallationList) {
+        for (const installed of launcherData.InstallationList) {
+          const installLocation = (_c = installed.InstallLocation) == null ? void 0 : _c.replace(/\//g, "\\");
+          const appName = installed.AppName;
+          if (!installLocation || !appName) continue;
+          if (foundInstallLocations.has(installLocation)) continue;
+          if (await dirExists(installLocation)) {
+            const launchUri = `com.epicgames.launcher://apps/${appName}?action=launch&silent=true`;
+            const displayName = appName;
+            games.push({
+              id: `epic-${appName.toLowerCase().replace(/\s+/g, "-")}`,
+              name: displayName,
+              executablePath: launchUri,
+              store: "epic",
+              installLocation
+            });
+            log.info(`Found Epic game (dat): ${displayName}`);
+          }
+        }
+      }
+    } catch (e) {
+      log.debug("Could not read LauncherInstalled.dat:", e);
+    }
+    log.info(`Found ${games.length} Epic games`);
+  } catch (error) {
+    log.error("Error detecting Epic games:", error);
+  }
+  return games;
+}
+log.transports.file.level = "info";
+log.transports.console.level = "debug";
+log.info("Application starting...");
+electron.app.disableHardwareAcceleration();
+process.on("uncaughtException", (error) => {
+  log.error("Uncaught Exception:", error);
+});
+process.on("unhandledRejection", (reason) => {
+  log.error("Unhandled Rejection:", reason);
+});
+const configDir = path.join(electron.app.getPath("userData"), "config");
+if (!fs.existsSync(configDir)) {
+  fs.mkdirSync(configDir, { recursive: true });
+}
+const store = new Store({
+  cwd: configDir,
+  name: "settings",
+  defaults: {
+    games: [],
+    settings: {
+      theme: "dark",
+      scanOnStartup: true
+    }
+  }
+});
+let mainWindow = null;
+const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+function createWindow() {
+  log.info("Creating main window...");
+  mainWindow = new electron.BrowserWindow({
+    width: 1280,
+    height: 800,
+    minWidth: 900,
+    minHeight: 600,
+    backgroundColor: "#0f0f0f",
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: false
+    },
+    frame: false,
+    titleBarStyle: "hidden",
+    show: false
+  });
+  mainWindow.once("ready-to-show", () => {
+    log.info("Window ready to show");
+    mainWindow == null ? void 0 : mainWindow.show();
+    if (VITE_DEV_SERVER_URL) {
+      mainWindow == null ? void 0 : mainWindow.webContents.openDevTools();
+    }
+  });
+  if (VITE_DEV_SERVER_URL) {
+    log.info("Loading dev server URL:", VITE_DEV_SERVER_URL);
+    mainWindow.loadURL(VITE_DEV_SERVER_URL);
+  } else {
+    log.info("Loading production build");
+    mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
+  }
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
+}
+electron.app.whenReady().then(() => {
+  log.info("App ready");
+  createWindow();
+  electron.globalShortcut.register("CommandOrControl+Shift+I", () => {
+    mainWindow == null ? void 0 : mainWindow.webContents.toggleDevTools();
+  });
+  electron.app.on("activate", () => {
+    if (electron.BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+electron.app.on("window-all-closed", () => {
+  log.info("All windows closed");
+  if (process.platform !== "darwin") {
+    electron.app.quit();
+  }
+});
+const isDev = !electron.app.isPackaged;
+const placeholderGames = isDev ? [
+  {
+    id: "dev-steam-1",
+    name: "Test Steam Game",
+    executablePath: "steam://rungameid/123456",
+    store: "steam",
+    installLocation: "C:\\Games\\TestSteam",
+    lastPlayed: (/* @__PURE__ */ new Date()).toISOString(),
+    playCount: 5,
+    isFavorite: true,
+    appid: "123456"
+  },
+  {
+    id: "dev-epic-1",
+    name: "Test Epic Game",
+    executablePath: "C:\\Games\\TestEpic\\game.exe",
+    store: "epic",
+    installLocation: "C:\\Games\\TestEpic",
+    lastPlayed: new Date(Date.now() - 864e5).toISOString(),
+    playCount: 2,
+    isFavorite: false
+  },
+  {
+    id: "dev-custom-1",
+    name: "Test Custom Game",
+    executablePath: "C:\\Games\\Custom\\game.exe",
+    store: "custom",
+    installLocation: "C:\\Games\\Custom"
+  }
+] : [];
+electron.ipcMain.handle("get-games", async () => {
+  log.info("IPC: get-games called");
+  const games = store.get("games");
+  if (isDev) {
+    return [...placeholderGames, ...games];
+  }
+  return games;
+});
+electron.ipcMain.handle("save-games", async (_, games) => {
+  log.info("IPC: save-games called, count:", games.length);
+  store.set("games", games);
+  return true;
+});
+electron.ipcMain.handle("scan-games", async (event, drives) => {
+  log.info("IPC: scan-games called", drives ? `with drives: ${drives.join(", ")}` : "with default drives");
+  try {
+    const sendProgress = (current, total, currentGame, store2) => {
+      event.sender.send("scan-progress", { current, total, currentGame, store: store2 });
+    };
+    const existingGames = store.get("games");
+    const existingIds = new Set(existingGames.map((g) => g.id));
+    sendProgress(0, 0, "", "steam");
+    const steamGames = await getSteamGames(drives);
+    sendProgress(0, 0, "", "epic");
+    const epicGames = await getEpicGames();
+    const allDetectedGames = [...steamGames, ...epicGames];
+    const newGames = allDetectedGames.filter((g) => !existingIds.has(g.id));
+    const updatedGames = [...existingGames, ...newGames];
+    const realGames = updatedGames.filter((g) => !g.id.startsWith("dev-"));
+    store.set("games", realGames);
+    const returnedGames = isDev ? [...placeholderGames, ...updatedGames] : updatedGames;
+    sendProgress(newGames.length, newGames.length, "", "complete");
+    log.info(`Scan complete. Found ${newGames.length} new games`);
+    return { games: returnedGames, newCount: newGames.length };
+  } catch (error) {
+    log.error("Error scanning games:", error);
+    throw error;
+  }
+});
+electron.ipcMain.handle("get-drives", async () => {
+  log.info("IPC: get-drives called");
+  try {
+    const drives = await getUserDrives();
+    return drives;
+  } catch (error) {
+    log.error("Error getting drives:", error);
+    throw error;
+  }
+});
+electron.ipcMain.handle("add-game", async (_, game) => {
+  log.info("IPC: add-game called", game.name);
+  const games = store.get("games");
+  const newGame = {
+    ...game,
+    id: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  };
+  games.push(newGame);
+  store.set("games", games);
+  return newGame;
+});
+electron.ipcMain.handle("remove-game", async (_, gameId) => {
+  log.info("IPC: remove-game called", gameId);
+  const games = store.get("games");
+  const filtered = games.filter((g) => g.id !== gameId);
+  store.set("games", filtered);
+  return true;
+});
+electron.ipcMain.handle("launch-game", async (_, game) => {
+  log.info("IPC: launch-game called", game.name);
+  try {
+    if (game.store === "steam" && game.appid) {
+      const steamPath = await getSteamInstallPath();
+      if (steamPath) {
+        const steamExe = path.join(steamPath, "steam.exe");
+        log.info(`Launching Steam with -silent: ${steamExe}`);
+        child_process.exec(`"${steamExe}" -silent`);
+        await new Promise((resolve) => setTimeout(resolve, 2e3));
+      }
+      const steamUrl = getSteamLaunchUrl(game.appid);
+      log.info(`Launching Steam game via: ${steamUrl}`);
+      await electron.shell.openExternal(steamUrl);
+    } else if (game.store === "epic" || game.executablePath.startsWith("com.epicgames")) {
+      const epicUrl = game.executablePath.startsWith("com.epicgames") ? game.executablePath : game.executablePath;
+      log.info(`Launching Epic game via: ${epicUrl}`);
+      await electron.shell.openExternal(epicUrl);
+    } else {
+      await electron.shell.openPath(game.executablePath);
+    }
+    const games = store.get("games");
+    const updated = games.map((g) => {
+      if (g.id === game.id) {
+        return {
+          ...g,
+          lastPlayed: (/* @__PURE__ */ new Date()).toISOString(),
+          playCount: (g.playCount || 0) + 1
+        };
+      }
+      return g;
+    });
+    store.set("games", updated);
+    log.info("Game launched successfully:", game.name);
+    return true;
+  } catch (error) {
+    log.error("Error launching game:", error);
+    throw error;
+  }
+});
+electron.ipcMain.handle("select-executable", async () => {
+  log.info("IPC: select-executable called");
+  const result = await electron.dialog.showOpenDialog({
+    properties: ["openFile"],
+    filters: [
+      { name: "Executables", extensions: ["exe", "lnk", "bat", "cmd"] },
+      { name: "All Files", extensions: ["*"] }
+    ]
+  });
+  if (result.canceled || result.filePaths.length === 0) {
+    return null;
+  }
+  return result.filePaths[0];
+});
+electron.ipcMain.handle("select-image", async () => {
+  log.info("IPC: select-image called");
+  const result = await electron.dialog.showOpenDialog({
+    properties: ["openFile"],
+    filters: [
+      { name: "Images", extensions: ["png", "jpg", "jpeg", "webp", "gif"] }
+    ]
+  });
+  if (result.canceled || result.filePaths.length === 0) {
+    return null;
+  }
+  return result.filePaths[0];
+});
+electron.ipcMain.handle("get-settings", async () => {
+  return store.get("settings");
+});
+electron.ipcMain.handle("save-settings", async (_, settings) => {
+  store.set("settings", settings);
+  return true;
+});
+electron.ipcMain.handle("window-minimize", () => {
+  mainWindow == null ? void 0 : mainWindow.minimize();
+});
+electron.ipcMain.handle("window-maximize", () => {
+  if (mainWindow == null ? void 0 : mainWindow.isMaximized()) {
+    mainWindow.unmaximize();
+  } else {
+    mainWindow == null ? void 0 : mainWindow.maximize();
+  }
+});
+electron.ipcMain.handle("window-close", () => {
+  mainWindow == null ? void 0 : mainWindow.close();
+});
+electron.ipcMain.handle("window-is-maximized", () => {
+  return (mainWindow == null ? void 0 : mainWindow.isMaximized()) ?? false;
+});
+log.info("Main process initialized");

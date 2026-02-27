@@ -8,6 +8,7 @@ interface GameCardProps {
   onLaunch: (game: GameInfo) => void
   onRemove: (gameId: string) => void
   onToggleFavorite: (gameId: string) => void
+  onEdit: (game: GameInfo) => void
   themeColors: ThemeColors
 }
 
@@ -31,7 +32,7 @@ const storeLogos = {
   )
 }
 
-export default function GameCard({ game, viewMode, onLaunch, onRemove, onToggleFavorite, themeColors }: GameCardProps) {
+export default function GameCard({ game, viewMode, onLaunch, onRemove, onToggleFavorite, onEdit, themeColors }: GameCardProps) {
   const [showMenu, setShowMenu] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 
@@ -100,6 +101,37 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onToggleF
 
               {showMenu && (
                 <div className="absolute right-0 top-full mt-1 w-48 rounded-lg shadow-xl z-10 overflow-hidden" style={{ backgroundColor: themeColors.surface, borderColor: themeColors.border, borderWidth: 1, borderStyle: 'solid' }}>
+                  <button
+                    onClick={() => { onLaunch(game); setShowMenu(false) }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-white/10"
+                    style={{ color: themeColors.text }}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {labels.gameCard.play}
+                  </button>
+                  <button
+                    onClick={() => { onEdit(game); setShowMenu(false) }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-white/10"
+                    style={{ color: themeColors.text }}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => { onToggleFavorite(game.id); setShowMenu(false) }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-white/10"
+                    style={{ color: themeColors.text }}
+                  >
+                    <svg className="w-4 h-4" fill={game.isFavorite ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    {game.isFavorite ? labels.gameCard.removeFromFavorites : labels.gameCard.addToFavorites}
+                  </button>
                   <button
                     onClick={() => { onLaunch(game); setShowMenu(false) }}
                     className="w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-white/10"
@@ -186,21 +218,21 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onToggleF
           </span>
         </div>
 
-        <button
-          onClick={() => onToggleFavorite(game.id)}
-          className="absolute top-2 right-2 p-2 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
-        >
-          <svg 
-            className={`w-4 h-4 ${game.isFavorite ? 'text-red-500' : 'text-white'}`} 
-            fill={game.isFavorite ? "currentColor" : "none"} 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
+        <div className="absolute top-2 right-2 flex gap-1">
+          <button
+            onClick={() => onToggleFavorite(game.id)}
+            className="p-2 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-        </button>
+            <svg 
+              className={`w-4 h-4 ${game.isFavorite ? 'text-red-500' : 'text-white'}`} 
+              fill={game.isFavorite ? "currentColor" : "none"} 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
 
-        <div className="absolute top-2 right-2">
           <button
             onClick={() => setShowMenu(!showMenu)}
             className="p-2 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
@@ -221,6 +253,16 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onToggleF
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                 </svg>
                 {labels.gameCard.play}
+              </button>
+              <button
+                onClick={() => { onEdit(game); setShowMenu(false) }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-white/10"
+                style={{ color: themeColors.text }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit
               </button>
               <button
                 onClick={() => { onToggleFavorite(game.id); setShowMenu(false) }}

@@ -1,1 +1,25 @@
-"use strict";const e=require("electron"),s={getGames:()=>e.ipcRenderer.invoke("get-games"),saveGames:i=>e.ipcRenderer.invoke("save-games",i),scanGames:i=>e.ipcRenderer.invoke("scan-games",i),getDrives:()=>e.ipcRenderer.invoke("get-drives"),addGame:i=>e.ipcRenderer.invoke("add-game",i),removeGame:i=>e.ipcRenderer.invoke("remove-game",i),launchGame:i=>e.ipcRenderer.invoke("launch-game",i),selectExecutable:()=>e.ipcRenderer.invoke("select-executable"),selectImage:()=>e.ipcRenderer.invoke("select-image"),getSettings:()=>e.ipcRenderer.invoke("get-settings"),saveSettings:i=>e.ipcRenderer.invoke("save-settings",i),windowMinimize:()=>e.ipcRenderer.invoke("window-minimize"),windowMaximize:()=>e.ipcRenderer.invoke("window-maximize"),windowClose:()=>e.ipcRenderer.invoke("window-close"),windowIsMaximized:()=>e.ipcRenderer.invoke("window-is-maximized"),onScanProgress:i=>{const n=(o,r)=>i(r);return e.ipcRenderer.on("scan-progress",n),()=>e.ipcRenderer.removeListener("scan-progress",n)}};e.contextBridge.exposeInMainWorld("electronAPI",s);
+"use strict";
+const electron = require("electron");
+const electronAPI = {
+  getGames: () => electron.ipcRenderer.invoke("get-games"),
+  saveGames: (games) => electron.ipcRenderer.invoke("save-games", games),
+  scanGames: (drives) => electron.ipcRenderer.invoke("scan-games", drives),
+  getDrives: () => electron.ipcRenderer.invoke("get-drives"),
+  addGame: (game) => electron.ipcRenderer.invoke("add-game", game),
+  removeGame: (gameId) => electron.ipcRenderer.invoke("remove-game", gameId),
+  launchGame: (game) => electron.ipcRenderer.invoke("launch-game", game),
+  selectExecutable: () => electron.ipcRenderer.invoke("select-executable"),
+  selectImage: () => electron.ipcRenderer.invoke("select-image"),
+  getSettings: () => electron.ipcRenderer.invoke("get-settings"),
+  saveSettings: (settings) => electron.ipcRenderer.invoke("save-settings", settings),
+  windowMinimize: () => electron.ipcRenderer.invoke("window-minimize"),
+  windowMaximize: () => electron.ipcRenderer.invoke("window-maximize"),
+  windowClose: () => electron.ipcRenderer.invoke("window-close"),
+  windowIsMaximized: () => electron.ipcRenderer.invoke("window-is-maximized"),
+  onScanProgress: (callback) => {
+    const handler = (_, progress) => callback(progress);
+    electron.ipcRenderer.on("scan-progress", handler);
+    return () => electron.ipcRenderer.removeListener("scan-progress", handler);
+  }
+};
+electron.contextBridge.exposeInMainWorld("electronAPI", electronAPI);
