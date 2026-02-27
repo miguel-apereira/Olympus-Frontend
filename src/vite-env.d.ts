@@ -1,10 +1,18 @@
 /// <reference types="vite/client" />
 
+interface ScanProgress {
+  current: number
+  total: number
+  currentGame: string
+  store: string
+}
+
 interface Window {
   electronAPI: {
     getGames: () => Promise<import('./types').GameInfo[]>
     saveGames: (games: import('./types').GameInfo[]) => Promise<boolean>
-    scanGames: () => Promise<{ games: import('./types').GameInfo[]; newCount: number }>
+    scanGames: (drives?: string[]) => Promise<{ games: import('./types').GameInfo[]; newCount: number }>
+    getDrives: () => Promise<string[]>
     addGame: (game: Omit<import('./types').GameInfo, 'id'>) => Promise<import('./types').GameInfo>
     removeGame: (gameId: string) => Promise<boolean>
     launchGame: (game: import('./types').GameInfo) => Promise<boolean>
@@ -16,5 +24,6 @@ interface Window {
     windowMaximize: () => Promise<void>
     windowClose: () => Promise<void>
     windowIsMaximized: () => Promise<boolean>
+    onScanProgress: (callback: (progress: ScanProgress) => void) => () => void
   }
 }

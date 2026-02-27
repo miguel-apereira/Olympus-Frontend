@@ -24,11 +24,6 @@ const storeLogos = {
       <path d="M12 2L2 8.5V22h20V8.5L12 2zm0 2.5L18.5 9H16v6h-4V9H5.5L12 4.5z"/>
     </svg>
   ),
-  ea: (
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-    </svg>
-  ),
   custom: (
     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -67,13 +62,13 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onToggleF
             <img src={`file://${game.coverImage}`} alt={game.name} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-2xl font-bold" style={{ color: themeColors.textSecondary }}>
-              {game.name.charAt(0).toUpperCase()}
+              {(game.name || '?').charAt(0).toUpperCase()}
             </div>
           )}
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold truncate" style={{ color: themeColors.text }}>{game.name}</h3>
+          <h3 className="font-semibold truncate" style={{ color: themeColors.text }}>{game.name || 'Unknown Game'}</h3>
           <p className="text-sm" style={{ color: themeColors.textSecondary }}>{formatLastPlayed(game.lastPlayed)}</p>
         </div>
 
@@ -161,7 +156,7 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onToggleF
         ) : (
           <div className="w-full h-full placeholder-icon flex items-center justify-center" style={{ backgroundColor: themeColors.surface }}>
             <div className="text-6xl font-bold opacity-30" style={{ color: themeColors.textSecondary }}>
-              {game.name.charAt(0).toUpperCase()}
+              {(game.name || '?').charAt(0).toUpperCase()}
             </div>
           </div>
         )}
@@ -252,7 +247,7 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onToggleF
       </div>
 
       <div className="p-3">
-        <h3 className="font-medium text-sm truncate" style={{ color: themeColors.text }}>{game.name}</h3>
+        <h3 className="font-medium text-sm truncate" style={{ color: themeColors.text }}>{game.name || 'Unknown Game'}</h3>
         <p className="text-xs mt-1 truncate" style={{ color: themeColors.textSecondary }}>{formatLastPlayed(game.lastPlayed)}</p>
       </div>
     </div>

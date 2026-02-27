@@ -1,11 +1,9 @@
-import { StoreType, ThemeMode } from '../config'
-
 export interface GameInfo {
   id: string
   name: string
   executablePath: string
   coverImage?: string
-  store: StoreType
+  store: 'steam' | 'epic' | 'custom'
   installLocation?: string
   lastPlayed?: string
   playCount?: number
@@ -14,8 +12,6 @@ export interface GameInfo {
 }
 
 export interface Settings {
-  theme: ThemeMode
+  theme: string
   scanOnStartup: boolean
 }
-
-export type ViewType = 'all' | 'favorites' | 'recent' | 'steam' | 'epic' | 'custom' | 'settings'

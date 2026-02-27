@@ -1,13 +1,26 @@
-import { app, BrowserWindow, ipcMain, shell, dialog } from 'electron'
+import { app, BrowserWindow, ipcMain, shell, dialog, globalShortcut } from 'electron'
 import path from 'path'
 import fs from 'fs'
 import log from 'electron-log'
 import Store from 'electron-store'
-import { detectSteamGames, detectEpicGames, detectEAGames, GameInfo } from './gameDetector'
+import { getUserDrives } from './getUserDrives'
+import { getSteamGames, getSteamLaunchUrl, getSteamInstallPath } from './getSteamGames'
+import { getEpicGames } from './getEpicGames'
+import { GameInfo, Settings } from './types'
 
 log.transports.file.level = 'info'
 log.transports.console.level = 'debug'
 log.info('Application starting...')
+
+app.disableHardwareAcceleration()
+
+process.on('uncaughtException', (error) => {
+  log.error('Uncaught Exception:', error)
+})
+
+process.on('unhandledRejection', (reason) => {
+  log.error('Unhandled Rejection:', reason)
+})
 
 const configDir = path.join(app.getPath('userData'), 'config')
 if (!fs.existsSync(configDir)) {
@@ -46,18 +59,22 @@ function createWindow() {
       sandbox: false
     },
     frame: false,
+    titleBarStyle: 'hidden',
     show: false
   })
 
   mainWindow.once('ready-to-show', () => {
     log.info('Window ready to show')
     mainWindow?.show()
+    
+    if (VITE_DEV_SERVER_URL) {
+      mainWindow?.webContents.openDevTools()
+    }
   })
 
   if (VITE_DEV_SERVER_URL) {
     log.info('Loading dev server URL:', VITE_DEV_SERVER_URL)
     mainWindow.loadURL(VITE_DEV_SERVER_URL)
-    mainWindow.webContents.openDevTools()
   } else {
     log.info('Loading production build')
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
@@ -71,6 +88,10 @@ function createWindow() {
 app.whenReady().then(() => {
   log.info('App ready')
   createWindow()
+
+  globalShortcut.register('CommandOrControl+Shift+I', () => {
+    mainWindow?.webContents.toggleDevTools()
+  })
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -97,28 +118,45 @@ ipcMain.handle('save-games', async (_, games: GameInfo[]) => {
   return true
 })
 
-ipcMain.handle('scan-games', async () => {
-  log.info('IPC: scan-games called')
+ipcMain.handle('scan-games', async (event, drives?: string[]) => {
+  log.info('IPC: scan-games called', drives ? `with drives: ${drives.join(', ')}` : 'with default drives')
   try {
+    const sendProgress = (current: number, total: number, currentGame: string, store: string) => {
+      event.sender.send('scan-progress', { current, total, currentGame, store })
+    }
+
     const existingGames = store.get('games') as GameInfo[]
     const existingIds = new Set(existingGames.map(g => g.id))
     
-    const [steamGames, epicGames, eaGames] = await Promise.all([
-      detectSteamGames(),
-      detectEpicGames(),
-      detectEAGames()
-    ])
+    sendProgress(0, 0, '', 'steam')
+    const steamGames = await getSteamGames(drives)
+    
+    sendProgress(0, 0, '', 'epic')
+    const epicGames = await getEpicGames()
 
-    const allDetectedGames = [...steamGames, ...epicGames, ...eaGames]
+    const allDetectedGames = [...steamGames, ...epicGames]
     const newGames = allDetectedGames.filter(g => !existingIds.has(g.id))
 
     const updatedGames = [...existingGames, ...newGames]
     store.set('games', updatedGames)
 
+    sendProgress(newGames.length, newGames.length, '', 'complete')
+    
     log.info(`Scan complete. Found ${newGames.length} new games`)
     return { games: updatedGames, newCount: newGames.length }
   } catch (error) {
     log.error('Error scanning games:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('get-drives', async () => {
+  log.info('IPC: get-drives called')
+  try {
+    const drives = await getUserDrives()
+    return drives
+  } catch (error) {
+    log.error('Error getting drives:', error)
     throw error
   }
 })
@@ -146,7 +184,13 @@ ipcMain.handle('remove-game', async (_, gameId: string) => {
 ipcMain.handle('launch-game', async (_, game: GameInfo) => {
   log.info('IPC: launch-game called', game.name)
   try {
-    await shell.openPath(game.executablePath)
+    if (game.store === 'steam' && game.appid) {
+      const steamUrl = getSteamLaunchUrl(game.appid)
+      log.info(`Launching Steam game via: ${steamUrl}`)
+      await shell.openExternal(steamUrl)
+    } else {
+      await shell.openPath(game.executablePath)
+    }
     
     const games = store.get('games') as GameInfo[]
     const updated = games.map(g => {

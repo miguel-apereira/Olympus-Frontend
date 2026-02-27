@@ -4,8 +4,17 @@ import GameGrid from './components/GameGrid'
 import AddGameModal from './components/AddGameModal'
 import SettingsView from './components/SettingsView'
 import TitleBar from './components/TitleBar'
+import ScanProgressModal from './components/ScanProgressModal'
 import { GameInfo, ViewType, Settings } from './types'
 import { project, labels, themes } from './config'
+
+window.onerror = (message, source, lineno, colno, error) => {
+  console.error('Global error:', message, source, lineno, colno, error)
+}
+
+window.onunhandledrejection = (event) => {
+  console.error('Unhandled rejection:', event.reason)
+}
 
 function App() {
   const [games, setGames] = useState<GameInfo[]>([])
@@ -15,6 +24,8 @@ function App() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [settings, setSettings] = useState<Settings>({ theme: 'dark', scanOnStartup: true })
   const [isScanning, setIsScanning] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [scanProgress, setScanProgress] = useState<{ current: number; total: number; currentGame: string; store: string } | null>(null)
 
   const themeColors = themes[settings.theme]
 
@@ -22,12 +33,28 @@ function App() {
     loadInitialData()
   }, [])
 
+  useEffect(() => {
+    const unsubscribe = window.electronAPI.onScanProgress((progress) => {
+      setScanProgress(progress)
+      if (progress.store === 'complete') {
+        setTimeout(() => {
+          setIsScanning(false)
+          setScanProgress(null)
+        }, 1500)
+      }
+    })
+    return unsubscribe
+  }, [])
+
   const loadInitialData = async () => {
     try {
+      console.log('Loading initial data...')
       const [loadedGames, loadedSettings] = await Promise.all([
         window.electronAPI.getGames(),
         window.electronAPI.getSettings()
       ])
+      console.log('Games loaded:', loadedGames.length)
+      console.log('Settings loaded:', loadedSettings)
       setGames(loadedGames)
       setSettings(loadedSettings)
 
@@ -36,15 +63,16 @@ function App() {
       }
     } catch (error) {
       console.error('Error loading data:', error)
+      setError(String(error))
     } finally {
       setIsLoading(false)
     }
   }
 
-  const scanForGames = async () => {
+  const scanForGames = async (drives?: string[]) => {
     setIsScanning(true)
     try {
-      const result = await window.electronAPI.scanGames()
+      const result = await window.electronAPI.scanGames(drives)
       setGames(result.games)
     } catch (error) {
       console.error('Error scanning games:', error)
@@ -139,6 +167,17 @@ function App() {
 
   const filteredGames = getFilteredGames()
 
+  if (error) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-red-900 text-white">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold mb-4">Error</h1>
+          <p>{error}</p>
+        </div>
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
       <div 
@@ -175,7 +214,6 @@ function App() {
             recent: games.filter(g => g.lastPlayed).length,
             steam: games.filter(g => g.store === 'steam').length,
             epic: games.filter(g => g.store === 'epic').length,
-            ea: games.filter(g => g.store === 'ea').length,
             custom: games.filter(g => g.store === 'custom').length
           }}
           theme={settings.theme}
@@ -205,7 +243,6 @@ function App() {
                     {currentView === 'recent' && labels.sidebar.recentlyPlayed}
                     {currentView === 'steam' && project.supportedStoreNames.steam + ' Games'}
                     {currentView === 'epic' && project.supportedStoreNames.epic + ' Games'}
-                    {currentView === 'ea' && project.supportedStoreNames.ea + ' Games'}
                     {currentView === 'custom' && project.supportedStoreNames.custom + ' Games'}
                   </h1>
                   <p className="text-sm mt-1" style={{ color: themeColors.textSecondary }}>
@@ -271,6 +308,11 @@ function App() {
           onAdd={handleAddGame}
         />
       )}
+
+      <ScanProgressModal
+        isOpen={isScanning}
+        progress={scanProgress}
+      />
     </div>
   )
 }

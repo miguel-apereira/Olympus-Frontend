@@ -5,11 +5,12 @@ export interface GameInfo {
   name: string
   executablePath: string
   coverImage?: string
-  store: 'steam' | 'epic' | 'ea' | 'custom'
+  store: 'steam' | 'epic' | 'custom'
   installLocation?: string
   lastPlayed?: string
   playCount?: number
   isFavorite?: boolean
+  appid?: string
 }
 
 export interface Settings {
@@ -25,7 +26,8 @@ export interface ScanResult {
 const electronAPI = {
   getGames: (): Promise<GameInfo[]> => ipcRenderer.invoke('get-games'),
   saveGames: (games: GameInfo[]): Promise<boolean> => ipcRenderer.invoke('save-games', games),
-  scanGames: (): Promise<ScanResult> => ipcRenderer.invoke('scan-games'),
+  scanGames: (drives?: string[]): Promise<ScanResult> => ipcRenderer.invoke('scan-games', drives),
+  getDrives: (): Promise<string[]> => ipcRenderer.invoke('get-drives'),
   addGame: (game: Omit<GameInfo, 'id'>): Promise<GameInfo> => ipcRenderer.invoke('add-game', game),
   removeGame: (gameId: string): Promise<boolean> => ipcRenderer.invoke('remove-game', gameId),
   launchGame: (game: GameInfo): Promise<boolean> => ipcRenderer.invoke('launch-game', game),
@@ -36,7 +38,12 @@ const electronAPI = {
   windowMinimize: (): Promise<void> => ipcRenderer.invoke('window-minimize'),
   windowMaximize: (): Promise<void> => ipcRenderer.invoke('window-maximize'),
   windowClose: (): Promise<void> => ipcRenderer.invoke('window-close'),
-  windowIsMaximized: (): Promise<boolean> => ipcRenderer.invoke('window-is-maximized')
+  windowIsMaximized: (): Promise<boolean> => ipcRenderer.invoke('window-is-maximized'),
+  onScanProgress: (callback: (progress: { current: number; total: number; currentGame: string; store: string }) => void) => {
+    const handler = (_: unknown, progress: { current: number; total: number; currentGame: string; store: string }) => callback(progress)
+    ipcRenderer.on('scan-progress', handler)
+    return () => ipcRenderer.removeListener('scan-progress', handler)
+  }
 }
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI)

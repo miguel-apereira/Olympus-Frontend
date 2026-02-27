@@ -76,7 +76,6 @@ export const theme = {
     store: {
       steam: '#1b2838',
       epic: '#2a2a2a',
-      ea: '#ff4747',
       custom: '#6b7280'
     }
   },
@@ -198,7 +197,7 @@ export const labels = {
     scanOnStartup: 'Scan on startup',
     scanOnStartupDescription: 'Automatically scan for new games when the app launches',
     manualScan: 'Manual Scan',
-    manualScanDescription: 'Scan your computer for installed games from Steam, Epic Games, and EA.',
+    manualScanDescription: 'Scan your computer for installed games from Steam and Epic Games.',
     appearance: 'Appearance',
     theme: 'Theme',
     themeDescription: 'Choose your preferred color theme',

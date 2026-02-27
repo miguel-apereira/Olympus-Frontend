@@ -1,5 +1,5 @@
 {
-  "name": "Olympus Frontend",
+  "name": "olympus-frontend",
   "version": "1.0.0",
   "description": "Modern PC Game Launcher",
   "main": "dist-electron/main.js",
@@ -12,10 +12,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "electron-log": "^5.0.0",
     "electron-store": "^8.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -50,7 +50,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
