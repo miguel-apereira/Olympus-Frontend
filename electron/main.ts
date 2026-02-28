@@ -6,6 +6,7 @@ import log from 'electron-log'
 import Store from 'electron-store'
 import { getSteamGames, getSteamLaunchUrl, getSteamInstallPath } from './getSteamGames'
 import { getEpicGames } from './getEpicGames'
+import { isAppRunning } from './gameProcess'
 import { GameInfo, Settings } from './types'
 
 log.transports.file.level = 'info'
@@ -143,6 +144,16 @@ const placeholderGames: GameInfo[] = isDev ? [
 ipcMain.handle('get-games', async () => {
   log.info('IPC: get-games called')
   const games = store.get('games') as GameInfo[]
+  const visibleGames = games.filter(g => !g.isHidden)
+  if (isDev) {
+    return [...placeholderGames.filter(g => !g.isHidden), ...visibleGames]
+  }
+  return visibleGames
+})
+
+ipcMain.handle('get-all-games', async () => {
+  log.info('IPC: get-all-games called')
+  const games = store.get('games') as GameInfo[]
   if (isDev) {
     return [...placeholderGames, ...games]
   }
@@ -152,6 +163,22 @@ ipcMain.handle('get-games', async () => {
 ipcMain.handle('save-games', async (_, games: GameInfo[]) => {
   log.info('IPC: save-games called, count:', games.length)
   store.set('games', games)
+  return true
+})
+
+ipcMain.handle('hide-game', async (_, gameId: string) => {
+  log.info('IPC: hide-game called', gameId)
+  const games = store.get('games') as GameInfo[]
+  const updated = games.map(g => g.id === gameId ? { ...g, isHidden: true } : g)
+  store.set('games', updated)
+  return true
+})
+
+ipcMain.handle('unhide-game', async (_, gameId: string) => {
+  log.info('IPC: unhide-game called', gameId)
+  const games = store.get('games') as GameInfo[]
+  const updated = games.map(g => g.id === gameId ? { ...g, isHidden: false } : g)
+  store.set('games', updated)
   return true
 })
 
@@ -179,7 +206,8 @@ ipcMain.handle('scan-games', async (event) => {
     const realGames = updatedGames.filter(g => !g.id.startsWith('dev-'))
     store.set('games', realGames)
 
-    const returnedGames = isDev ? [...placeholderGames, ...updatedGames] : updatedGames
+    const visibleGames = realGames.filter(g => !g.isHidden)
+    const returnedGames = isDev ? [...placeholderGames.filter(g => !g.isHidden), ...visibleGames] : visibleGames
 
     sendProgress(newGames.length, newGames.length, '', 'complete')
     
@@ -218,10 +246,15 @@ ipcMain.handle('launch-game', async (_, game: GameInfo) => {
       const steamPath = await getSteamInstallPath()
       if (steamPath) {
         const steamExe = path.join(steamPath, 'steam.exe')
-        log.info(`Launching Steam with -silent: ${steamExe}`)
-        exec(`"${steamExe}" -silent`)
+        const isSteamRunning = await isAppRunning('steam.exe')
         
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        if (!isSteamRunning) {
+          log.info(`Launching Steam with -silent: ${steamExe}`)
+          exec(`"${steamExe}" -silent`)
+          await new Promise(resolve => setTimeout(resolve, 2000))
+        } else {
+          log.info('Steam is already running, skipping launch')
+        }
       }
       
       const steamUrl = getSteamLaunchUrl(game.appid)

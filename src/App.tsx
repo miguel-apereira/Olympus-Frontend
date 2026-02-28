@@ -102,6 +102,25 @@ function App() {
     }
   }
 
+  const handleHideGame = async (gameId: string) => {
+    try {
+      await window.electronAPI.hideGame(gameId)
+      setGames(prev => prev.filter(g => g.id !== gameId))
+    } catch (error) {
+      console.error('Error hiding game:', error)
+    }
+  }
+
+  const handleUnhideGame = async (gameId: string) => {
+    try {
+      await window.electronAPI.unhideGame(gameId)
+      const updatedGames = await window.electronAPI.getGames()
+      setGames(updatedGames)
+    } catch (error) {
+      console.error('Error unhiding game:', error)
+    }
+  }
+
   const handleEditGame = async (updatedGame: GameInfo) => {
     try {
       await window.electronAPI.saveGames(games.map(g => g.id === updatedGame.id ? updatedGame : g))
@@ -115,6 +134,7 @@ function App() {
   const handleLaunchGame = async (game: GameInfo) => {
     try {
       await window.electronAPI.launchGame(game)
+      
       setGames(prev => prev.map(g => {
         if (g.id === game.id) {
           return {
@@ -305,10 +325,11 @@ function App() {
               </header>
 
               <GameGrid
-                key={currentView}
                 games={filteredGames}
                 onLaunch={handleLaunchGame}
                 onRemove={handleRemoveGame}
+                onHide={handleHideGame}
+                onUnhide={handleUnhideGame}
                 onToggleFavorite={handleToggleFavorite}
                 onEdit={setEditingGame}
                 isEmpty={filteredGames.length === 0}

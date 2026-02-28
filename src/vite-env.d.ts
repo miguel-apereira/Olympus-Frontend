@@ -10,11 +10,13 @@ interface ScanProgress {
 interface Window {
   electronAPI: {
     getGames: () => Promise<import('./types').GameInfo[]>
+    getAllGames: () => Promise<import('./types').GameInfo[]>
     saveGames: (games: import('./types').GameInfo[]) => Promise<boolean>
-    scanGames: (drives?: string[]) => Promise<{ games: import('./types').GameInfo[]; newCount: number }>
-    getDrives: () => Promise<string[]>
+    scanGames: () => Promise<{ games: import('./types').GameInfo[]; newCount: number }>
     addGame: (game: Omit<import('./types').GameInfo, 'id'>) => Promise<import('./types').GameInfo>
     removeGame: (gameId: string) => Promise<boolean>
+    hideGame: (gameId: string) => Promise<boolean>
+    unhideGame: (gameId: string) => Promise<boolean>
     launchGame: (game: import('./types').GameInfo) => Promise<boolean>
     selectExecutable: () => Promise<string | null>
     selectImage: () => Promise<string | null>

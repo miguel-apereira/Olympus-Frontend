@@ -12,6 +12,8 @@ export interface EpicGame {
   lastPlayed?: string
   playCount?: number
   isFavorite?: boolean
+  isHidden?: boolean
+  processName?: string
 }
 
 interface LauncherInstalledGame {
@@ -34,6 +36,32 @@ async function dirExists(dirPath: string): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+async function findGameExe(dirPath: string): Promise<string | null> {
+  try {
+    const files = await fs.readdir(dirPath)
+    
+    const exeFiles = files.filter(f => f.toLowerCase().endsWith('.exe'))
+    
+    for (const exe of exeFiles) {
+      const exeName = exe.toLowerCase()
+      if (
+        !exeName.includes('unins') && 
+        !exeName.includes('uninstall') &&
+        !exeName.includes('setup') &&
+        !exeName.includes('installer') &&
+        !exeName.includes('crashhandler') &&
+        !exeName.includes('redist') &&
+        !exeName.includes('vc_redist')
+      ) {
+        return exe
+      }
+    }
+  } catch {
+    // Directory not accessible
+  }
+  return null
 }
 
 export async function getEpicGames(): Promise<EpicGame[]> {
@@ -69,12 +97,15 @@ export async function getEpicGames(): Promise<EpicGame[]> {
                     ? `com.epicgames.launcher://apps/${appName}?action=launch&silent=true`
                     : installLocation
 
+                  const processName = await findGameExe(installLocation)
+
                   games.push({
                     id: `epic-${displayName.toLowerCase().replace(/\s+/g, '-')}`,
                     name: displayName,
                     executablePath: launchUri,
                     store: 'epic',
-                    installLocation: installLocation
+                    installLocation: installLocation,
+                    processName: processName || undefined
                   })
                   log.info(`Found Epic game (manifest): ${displayName}`)
                 }
@@ -113,13 +144,15 @@ export async function getEpicGames(): Promise<EpicGame[]> {
             const launchUri = `com.epicgames.launcher://apps/${appName}?action=launch&silent=true`
             
             const displayName = appName
+            const processName = await findGameExe(installLocation)
 
             games.push({
               id: `epic-${appName.toLowerCase().replace(/\s+/g, '-')}`,
               name: displayName,
               executablePath: launchUri,
               store: 'epic',
-              installLocation: installLocation
+              installLocation: installLocation,
+              processName: processName || undefined
             })
             log.info(`Found Epic game (dat): ${displayName}`)
           }

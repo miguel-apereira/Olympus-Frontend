@@ -10,7 +10,9 @@ export interface GameInfo {
   lastPlayed?: string
   playCount?: number
   isFavorite?: boolean
+  isHidden?: boolean
   appid?: string
+  processName?: string
 }
 
 export interface Settings {
@@ -25,10 +27,13 @@ export interface ScanResult {
 
 const electronAPI = {
   getGames: (): Promise<GameInfo[]> => ipcRenderer.invoke('get-games'),
+  getAllGames: (): Promise<GameInfo[]> => ipcRenderer.invoke('get-all-games'),
   saveGames: (games: GameInfo[]): Promise<boolean> => ipcRenderer.invoke('save-games', games),
   scanGames: (): Promise<ScanResult> => ipcRenderer.invoke('scan-games'),
   addGame: (game: Omit<GameInfo, 'id'>): Promise<GameInfo> => ipcRenderer.invoke('add-game', game),
   removeGame: (gameId: string): Promise<boolean> => ipcRenderer.invoke('remove-game', gameId),
+  hideGame: (gameId: string): Promise<boolean> => ipcRenderer.invoke('hide-game', gameId),
+  unhideGame: (gameId: string): Promise<boolean> => ipcRenderer.invoke('unhide-game', gameId),
   launchGame: (game: GameInfo): Promise<boolean> => ipcRenderer.invoke('launch-game', game),
   selectExecutable: (): Promise<string | null> => ipcRenderer.invoke('select-executable'),
   selectImage: (): Promise<string | null> => ipcRenderer.invoke('select-image'),

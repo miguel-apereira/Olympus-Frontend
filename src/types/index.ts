@@ -10,7 +10,9 @@ export interface GameInfo {
   lastPlayed?: string
   playCount?: number
   isFavorite?: boolean
+  isHidden?: boolean
   appid?: string
+  processName?: string
 }
 
 export interface Settings {

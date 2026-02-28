@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Settings } from '../types'
+import { Settings, GameInfo } from '../types'
 import { project, labels, themesList, ThemeMode, themes } from '../config'
 
 interface SettingsViewProps {
@@ -9,16 +9,31 @@ interface SettingsViewProps {
   isScanning: boolean
 }
 
-type SettingsTab = 'library' | 'appearance'
+type SettingsTab = 'library' | 'appearance' | 'hidden'
 
 export default function SettingsView({ settings, onSave, onScanGames, isScanning }: SettingsViewProps) {
   const [localSettings, setLocalSettings] = useState<Settings>(settings)
   const [themeDropdownOpen, setThemeDropdownOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<SettingsTab>('library')
+  const [hiddenGames, setHiddenGames] = useState<GameInfo[]>([])
 
   useEffect(() => {
     setLocalSettings(settings)
   }, [settings])
+
+  useEffect(() => {
+    const loadHiddenGames = async () => {
+      const allGames = await window.electronAPI.getAllGames()
+      setHiddenGames(allGames.filter(g => g.isHidden))
+    }
+    loadHiddenGames()
+  }, [activeTab])
+
+  const handleUnhideGame = async (gameId: string) => {
+    await window.electronAPI.unhideGame(gameId)
+    const allGames = await window.electronAPI.getAllGames()
+    setHiddenGames(allGames.filter(g => g.isHidden))
+  }
 
   const themeColors = themes[localSettings.theme]
 
@@ -37,6 +52,7 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
 
   const tabs: { id: SettingsTab; label: string }[] = [
     { id: 'library', label: labels.settings.library },
+    { id: 'hidden', label: 'Hidden' },
     { id: 'appearance', label: labels.settings.appearance }
   ]
 
@@ -128,6 +144,48 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
                 <p>{project.description}</p>
                 <p className="text-sm">Supports {project.supportedStoreNames.steam}, {project.supportedStoreNames.epic}, and {project.supportedStoreNames.custom} games</p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'hidden' && (
+          <div className="space-y-4">
+            <div className="rounded-xl p-6" style={{ backgroundColor: themeColors.card, border: `1px solid ${themeColors.border}` }}>
+              <h2 className="text-lg font-semibold mb-4" style={{ color: themeColors.text }}>Hidden Games</h2>
+              
+              {hiddenGames.length === 0 ? (
+                <p style={{ color: themeColors.textSecondary }}>No hidden games</p>
+              ) : (
+                <div className="space-y-2">
+                  {hiddenGames.map((game) => (
+                    <div 
+                      key={game.id}
+                      className="flex items-center justify-between p-3 rounded-lg"
+                      style={{ backgroundColor: themeColors.surface }}
+                    >
+                      <div className="flex items-center gap-3">
+                        {game.coverImage ? (
+                          <img src={`file://${game.coverImage}`} alt={game.name} className="w-10 h-14 object-cover rounded" />
+                        ) : (
+                          <div className="w-10 h-14 rounded flex items-center justify-center" style={{ backgroundColor: themeColors.border }}>
+                            <span className="text-lg font-bold" style={{ color: themeColors.textSecondary }}>{(game.name || '?').charAt(0).toUpperCase()}</span>
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-medium" style={{ color: themeColors.text }}>{game.name}</p>
+                          <p className="text-xs" style={{ color: themeColors.textSecondary }}>{game.store}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleUnhideGame(game.id)}
+                        className="px-3 py-1 text-sm rounded-lg bg-primary-600 hover:bg-primary-700 text-white transition-colors"
+                      >
+                        Unhide
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

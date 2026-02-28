@@ -13,7 +13,9 @@ export interface SteamGame {
   lastPlayed?: string
   playCount?: number
   isFavorite?: boolean
+  isHidden?: boolean
   appid: string
+  processName?: string
 }
 
 async function fileExists(filePath: string): Promise<boolean> {
@@ -164,9 +166,37 @@ async function parseLibraryFoldersVDF(steamPath: string): Promise<string[]> {
   return libraryPaths
 }
 
+async function findGameExe(dirPath: string, gameName: string): Promise<string | null> {
+  try {
+    const files = await fs.readdir(dirPath)
+    
+    const exeFiles = files.filter(f => f.toLowerCase().endsWith('.exe'))
+    
+    for (const exe of exeFiles) {
+      const exeName = exe.toLowerCase()
+      if (
+        !exeName.includes('unins') && 
+        !exeName.includes('uninstall') &&
+        !exeName.includes('setup') &&
+        !exeName.includes('installer') &&
+        !exeName.includes('crashhandler') &&
+        !exeName.includes('redist') &&
+        !exeName.includes('vc_redist')
+      ) {
+        return exe
+      }
+    }
+  } catch {
+    // Directory not accessible
+  }
+  return null
+}
+
 async function findSteamGamesInLibrary(libraryPath: string): Promise<SteamGame[]> {
   const games: SteamGame[] = []
   const steamAppsPath = path.join(libraryPath, 'steamapps')
+
+  const excludedAppIds = ['228980', '250820']
 
   try {
     if (!await fileExists(steamAppsPath)) {
@@ -190,6 +220,11 @@ async function findSteamGamesInLibrary(libraryPath: string): Promise<SteamGame[]
             const installDir = appState.AppState.installdir || ''
             const lastPlayedTimestamp = appState.AppState.LastPlayed || ''
 
+            if (excludedAppIds.includes(appid)) {
+              log.info(`Skipping excluded app: ${gameName} (${appid})`)
+              continue
+            }
+
             if (gameName && installDir) {
               const installPath = path.join(steamAppsPath, 'common', installDir)
               const exists = await fileExists(installPath)
@@ -199,6 +234,8 @@ async function findSteamGamesInLibrary(libraryPath: string): Promise<SteamGame[]
                   ? new Date(parseInt(lastPlayedTimestamp) * 1000).toISOString()
                   : undefined
 
+                const processName = await findGameExe(installPath, gameName)
+
                 games.push({
                   id: `steam-${appid}`,
                   name: gameName,
@@ -206,7 +243,8 @@ async function findSteamGamesInLibrary(libraryPath: string): Promise<SteamGame[]
                   store: 'steam',
                   installLocation: installPath,
                   lastPlayed: lastPlayed,
-                  appid: appid
+                  appid: appid,
+                  processName: processName || undefined
                 })
                 log.info(`Found game: ${gameName} (${appid}) at ${installPath}`)
               } else {
