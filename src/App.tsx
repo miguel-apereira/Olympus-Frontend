@@ -28,6 +28,7 @@ function App() {
   const [isScanning, setIsScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [scanProgress, setScanProgress] = useState<{ current: number; total: number; currentGame: string; store: string } | null>(null)
+  const [updateStatus, setUpdateStatus] = useState<{ status: string; version?: string; percent?: number; error?: string } | null>(null)
 
   const themeColors = themes[settings.theme]
 
@@ -46,6 +47,17 @@ function App() {
       }
     })
     return unsubscribe
+  }, [])
+
+  useEffect(() => {
+    const unsubscribe = window.electronAPI.onUpdateStatus((status) => {
+      setUpdateStatus(status)
+    })
+    return unsubscribe
+  }, [])
+
+  useEffect(() => {
+    window.electronAPI.checkForUpdates()
   }, [])
 
   const loadInitialData = async () => {
@@ -85,7 +97,27 @@ function App() {
 
   const handleAddGame = async (gameData: Omit<GameInfo, 'id'>) => {
     try {
-      const newGame = await window.electronAPI.addGame(gameData)
+      let coverImage = gameData.coverImage
+      
+      if (coverImage && !coverImage.includes('covers')) {
+        try {
+          const tempId = `temp-${Date.now()}`
+          const savedPath = await window.electronAPI.saveGameCover(tempId, coverImage)
+          coverImage = savedPath
+        } catch (error) {
+          console.error('Error copying cover:', error)
+        }
+      }
+      
+      const newGame = await window.electronAPI.addGame({ ...gameData, coverImage })
+      
+      if (coverImage && coverImage.includes('temp-')) {
+        const actualCover = await window.electronAPI.saveGameCover(newGame.id, coverImage)
+        const updatedGame = { ...newGame, coverImage: actualCover }
+        await window.electronAPI.saveGames(games.map(g => g.id === newGame.id ? updatedGame : g))
+        newGame.coverImage = actualCover
+      }
+      
       setGames(prev => [...prev, newGame])
       setShowAddModal(false)
     } catch (error) {
@@ -241,6 +273,60 @@ function App() {
   return (
     <div className="h-screen w-screen flex flex-col" style={appStyle}>
       <TitleBar theme={settings.theme} />
+      
+      {updateStatus && updateStatus.status === 'available' && (
+        <div className="bg-primary-600 px-4 py-2 flex items-center justify-between text-white">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            <span>Update {updateStatus.version} available</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.electronAPI.downloadUpdate()}
+              className="px-3 py-1 bg-white text-primary-600 rounded text-sm font-medium hover:bg-gray-100"
+            >
+              Download & Install
+            </button>
+          </div>
+        </div>
+      )}
+
+      {updateStatus && updateStatus.status === 'downloading' && (
+        <div className="bg-blue-600 px-4 py-2 flex items-center justify-between text-white">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Downloading update... {Math.round(updateStatus.percent || 0)}%</span>
+          </div>
+          <div className="w-32 h-2 bg-blue-800 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-white transition-all" 
+              style={{ width: `${updateStatus.percent || 0}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {updateStatus && updateStatus.status === 'downloaded' && (
+        <div className="bg-green-600 px-4 py-2 flex items-center justify-between text-white">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Update {updateStatus.version} ready to install</span>
+          </div>
+          <button
+            onClick={() => window.electronAPI.installUpdate()}
+            className="px-3 py-1 bg-white text-green-600 rounded text-sm font-medium hover:bg-gray-100"
+          >
+            Restart & Install
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-1 overflow-hidden">
         <Sidebar 
           currentView={currentView}
@@ -266,6 +352,10 @@ function App() {
               onSave={handleSaveSettings}
               onScanGames={scanForGames}
               isScanning={isScanning}
+              onRefreshGames={async () => {
+                const games = await window.electronAPI.getGames()
+                setGames(games)
+              }}
             />
           ) : (
             <>

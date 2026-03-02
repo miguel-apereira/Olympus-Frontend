@@ -161,8 +161,9 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onHide, o
               onClick={handleLaunch}
               className="w-full flex items-center justify-center gap-2 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2"/>
+                <path d="M10 8l6 4-6 4V8z" fill="currentColor"/>
               </svg>
               Play
             </button>

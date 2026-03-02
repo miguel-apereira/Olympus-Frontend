@@ -25,6 +25,22 @@ export interface ScanResult {
   newCount: number
 }
 
+export interface UpdateInfo {
+  currentVersion: string
+  latestVersion?: string
+  isUpdateAvailable?: boolean
+  releaseNotes?: string
+  status?: string
+}
+
+export interface UpdateStatus {
+  status: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error' | 'dev-mode'
+  version?: string
+  releaseNotes?: string
+  percent?: number
+  error?: string
+}
+
 const electronAPI = {
   getGames: (): Promise<GameInfo[]> => ipcRenderer.invoke('get-games'),
   getAllGames: (): Promise<GameInfo[]> => ipcRenderer.invoke('get-all-games'),
@@ -37,16 +53,25 @@ const electronAPI = {
   launchGame: (game: GameInfo): Promise<boolean> => ipcRenderer.invoke('launch-game', game),
   selectExecutable: (): Promise<string | null> => ipcRenderer.invoke('select-executable'),
   selectImage: (): Promise<string | null> => ipcRenderer.invoke('select-image'),
+  saveGameCover: (gameId: string, imagePath: string): Promise<string> => ipcRenderer.invoke('save-game-cover', gameId, imagePath),
   getSettings: (): Promise<Settings> => ipcRenderer.invoke('get-settings'),
   saveSettings: (settings: Settings): Promise<boolean> => ipcRenderer.invoke('save-settings', settings),
   windowMinimize: (): Promise<void> => ipcRenderer.invoke('window-minimize'),
   windowMaximize: (): Promise<void> => ipcRenderer.invoke('window-maximize'),
   windowClose: (): Promise<void> => ipcRenderer.invoke('window-close'),
   windowIsMaximized: (): Promise<boolean> => ipcRenderer.invoke('window-is-maximized'),
+  checkForUpdates: (): Promise<UpdateInfo | null> => ipcRenderer.invoke('check-for-updates'),
+  downloadUpdate: (): Promise<boolean> => ipcRenderer.invoke('download-update'),
+  installUpdate: (): Promise<void> => ipcRenderer.invoke('install-update'),
   onScanProgress: (callback: (progress: { current: number; total: number; currentGame: string; store: string }) => void) => {
     const handler = (_: unknown, progress: { current: number; total: number; currentGame: string; store: string }) => callback(progress)
     ipcRenderer.on('scan-progress', handler)
     return () => ipcRenderer.removeListener('scan-progress', handler)
+  },
+  onUpdateStatus: (callback: (status: UpdateStatus) => void) => {
+    const handler = (_: unknown, status: UpdateStatus) => callback(status)
+    ipcRenderer.on('update-status', handler)
+    return () => ipcRenderer.removeListener('update-status', handler)
   }
 }
 

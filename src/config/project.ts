@@ -1,7 +1,7 @@
 export const project = {
-  name: 'Olyumpus Launcher',
+  name: 'Olympus Game Launcher',
   version: '1.0.0',
-  description: 'A modern game launcher for Windows',
+  description: 'Let your games reside in one place, and launch them from there.',
   author: 'Salierus',
   supportedStores: ['steam', 'epic', 'custom'] as const,
   supportedStoreNames: {

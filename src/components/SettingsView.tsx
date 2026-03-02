@@ -2,20 +2,23 @@ import { useState, useEffect } from 'react'
 import { Settings, GameInfo } from '../types'
 import { project, labels, themesList, ThemeMode, themes } from '../config'
 
+type SettingsTab = 'library' | 'appearance' | 'hidden' | 'about'
+
 interface SettingsViewProps {
   settings: Settings
   onSave: (settings: Settings) => void
   onScanGames: () => void
   isScanning: boolean
+  onRefreshGames?: () => void
 }
 
-type SettingsTab = 'library' | 'appearance' | 'hidden'
-
-export default function SettingsView({ settings, onSave, onScanGames, isScanning }: SettingsViewProps) {
+export default function SettingsView({ settings, onSave, onScanGames, isScanning, onRefreshGames }: SettingsViewProps) {
   const [localSettings, setLocalSettings] = useState<Settings>(settings)
   const [themeDropdownOpen, setThemeDropdownOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<SettingsTab>('library')
   const [hiddenGames, setHiddenGames] = useState<GameInfo[]>([])
+  const [updateStatus, setUpdateStatus] = useState<{ status: string; version?: string; percent?: number; error?: string } | null>(null)
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false)
 
   useEffect(() => {
     setLocalSettings(settings)
@@ -29,10 +32,34 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
     loadHiddenGames()
   }, [activeTab])
 
+  useEffect(() => {
+    const unsubscribe = window.electronAPI.onUpdateStatus((status) => {
+      setUpdateStatus(status)
+      setIsCheckingUpdate(false)
+    })
+    return unsubscribe
+  }, [])
+
+  const handleCheckForUpdates = async () => {
+    setIsCheckingUpdate(true)
+    await window.electronAPI.checkForUpdates()
+  }
+
+  const handleDownloadUpdate = async () => {
+    await window.electronAPI.downloadUpdate()
+  }
+
+  const handleInstallUpdate = () => {
+    window.electronAPI.installUpdate()
+  }
+
   const handleUnhideGame = async (gameId: string) => {
     await window.electronAPI.unhideGame(gameId)
     const allGames = await window.electronAPI.getAllGames()
     setHiddenGames(allGames.filter(g => g.isHidden))
+    if (onRefreshGames) {
+      onRefreshGames()
+    }
   }
 
   const themeColors = themes[localSettings.theme]
@@ -53,7 +80,8 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
   const tabs: { id: SettingsTab; label: string }[] = [
     { id: 'library', label: labels.settings.library },
     { id: 'hidden', label: 'Hidden' },
-    { id: 'appearance', label: labels.settings.appearance }
+    { id: 'appearance', label: labels.settings.appearance },
+    { id: 'about', label: 'About' }
   ]
 
   return (
@@ -133,16 +161,6 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
                     )}
                   </button>
                 </div>
-              </div>
-            </div>
-
-            <div className="rounded-xl p-6" style={{ backgroundColor: themeColors.card, border: `1px solid ${themeColors.border}` }}>
-              <h2 className="text-lg font-semibold mb-4" style={{ color: themeColors.text }}>{labels.settings.about}</h2>
-              
-              <div className="space-y-2" style={{ color: themeColors.textSecondary }}>
-                <p><span style={{ color: themeColors.text }}>{project.name}</span> {labels.app.version}{project.version}</p>
-                <p>{project.description}</p>
-                <p className="text-sm">Supports {project.supportedStoreNames.steam}, {project.supportedStoreNames.epic}, and {project.supportedStoreNames.custom} games</p>
               </div>
             </div>
           </div>
@@ -240,6 +258,115 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
                     )}
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'about' && (
+          <div className="space-y-6">
+            <div className="rounded-xl p-6" style={{ backgroundColor: themeColors.card, border: `1px solid ${themeColors.border}` }}>
+              <h2 className="text-lg font-semibold mb-4" style={{ color: themeColors.text }}>About</h2>
+              
+              <div className="space-y-3" style={{ color: themeColors.textSecondary }}>
+                <p className="text-2xl font-bold" style={{ color: themeColors.text }}>{project.name}</p>
+                <p>Version {project.version}</p>
+                <p>{project.description}</p>
+                <p className="text-sm">Supports {project.supportedStoreNames.steam}, {project.supportedStoreNames.epic}, and {project.supportedStoreNames.custom} games</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl p-6" style={{ backgroundColor: themeColors.card, border: `1px solid ${themeColors.border}` }}>
+              <h2 className="text-lg font-semibold mb-4" style={{ color: themeColors.text }}>Updates</h2>
+              
+              <div className="space-y-4">
+                {updateStatus?.status === 'checking' || isCheckingUpdate ? (
+                  <div className="flex items-center gap-3" style={{ color: themeColors.textSecondary }}>
+                    <div className="w-5 h-5 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span>Checking for updates...</span>
+                  </div>
+                ) : updateStatus?.status === 'available' ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2" style={{ color: themeColors.text }}>
+                      <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      <span>Update {updateStatus.version} is available</span>
+                    </div>
+                    <button
+                      onClick={handleDownloadUpdate}
+                      className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Download & Install
+                    </button>
+                  </div>
+                ) : updateStatus?.status === 'downloading' ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2" style={{ color: themeColors.textSecondary }}>
+                      <div className="w-5 h-5 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Downloading update... {Math.round(updateStatus.percent || 0)}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: themeColors.border }}>
+                      <div 
+                        className="h-full bg-primary-600 transition-all" 
+                        style={{ width: `${updateStatus.percent || 0}%` }}
+                      />
+                    </div>
+                  </div>
+                ) : updateStatus?.status === 'downloaded' ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2" style={{ color: themeColors.text }}>
+                      <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Update {updateStatus.version} is ready to install</span>
+                    </div>
+                    <button
+                      onClick={handleInstallUpdate}
+                      className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Restart & Install
+                    </button>
+                  </div>
+                ) : updateStatus?.status === 'not-available' ? (
+                  <div className="flex items-center gap-2" style={{ color: themeColors.textSecondary }}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>You're running the latest version</span>
+                  </div>
+                ) : updateStatus?.status === 'error' ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-red-500">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Error: {updateStatus.error}</span>
+                    </div>
+                    <button
+                      onClick={handleCheckForUpdates}
+                      className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleCheckForUpdates}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Check for Updates
+                  </button>
+                )}
               </div>
             </div>
           </div>

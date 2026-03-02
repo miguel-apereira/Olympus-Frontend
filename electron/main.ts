@@ -4,10 +4,13 @@ import fs from 'fs'
 import { exec } from 'child_process'
 import log from 'electron-log'
 import Store from 'electron-store'
+import { autoUpdater } from 'electron-updater'
 import { getSteamGames, getSteamLaunchUrl, getSteamInstallPath } from './getSteamGames'
 import { getEpicGames } from './getEpicGames'
 import { isAppRunning } from './gameProcess'
 import { GameInfo, Settings } from './types'
+
+const currentVersion = app.getVersion()
 
 log.transports.file.level = 'info'
 log.transports.console.level = 'debug'
@@ -324,6 +327,29 @@ ipcMain.handle('select-image', async () => {
   return result.filePaths[0]
 })
 
+ipcMain.handle('save-game-cover', async (_, gameId: string, imagePath: string) => {
+  log.info('IPC: save-game-cover called', gameId, imagePath)
+  
+  try {
+    const coversDir = path.join(app.getPath('userData'), 'config', 'covers', gameId)
+    
+    if (!fs.existsSync(coversDir)) {
+      fs.mkdirSync(coversDir, { recursive: true })
+    }
+    
+    const ext = path.extname(imagePath) || '.png'
+    const destPath = path.join(coversDir, `cover${ext}`)
+    
+    fs.copyFileSync(imagePath, destPath)
+    
+    log.info('Cover copied to:', destPath)
+    return destPath
+  } catch (error) {
+    log.error('Error saving cover:', error)
+    throw error
+  }
+})
+
 ipcMain.handle('get-settings', async () => {
   return store.get('settings')
 })
@@ -351,6 +377,89 @@ ipcMain.handle('window-close', () => {
 
 ipcMain.handle('window-is-maximized', () => {
   return mainWindow?.isMaximized() ?? false
+})
+
+autoUpdater.logger = log
+autoUpdater.autoDownload = false
+autoUpdater.autoInstallOnAppQuit = true
+
+autoUpdater.on('checking-for-update', () => {
+  log.info('Checking for update...')
+  mainWindow?.webContents.send('update-status', { status: 'checking' })
+})
+
+autoUpdater.on('update-available', (info) => {
+  log.info('Update available:', info.version)
+  mainWindow?.webContents.send('update-status', { 
+    status: 'available', 
+    version: info.version,
+    releaseNotes: info.releaseNotes
+  })
+})
+
+autoUpdater.on('update-not-available', () => {
+  log.info('No update available')
+  mainWindow?.webContents.send('update-status', { status: 'not-available' })
+})
+
+autoUpdater.on('download-progress', (progress) => {
+  log.info(`Download progress: ${progress.percent.toFixed(1)}%`)
+  mainWindow?.webContents.send('update-status', { 
+    status: 'downloading', 
+    percent: progress.percent 
+  })
+})
+
+autoUpdater.on('update-downloaded', (info) => {
+  log.info('Update downloaded:', info.version)
+  mainWindow?.webContents.send('update-status', { 
+    status: 'downloaded', 
+    version: info.version 
+  })
+})
+
+autoUpdater.on('error', (error) => {
+  log.error('Auto-updater error:', error)
+  mainWindow?.webContents.send('update-status', { 
+    status: 'error', 
+    error: error.message 
+  })
+})
+
+ipcMain.handle('check-for-updates', async () => {
+  log.info('IPC: check-for-updates called')
+  try {
+    if (!app.isPackaged) {
+      log.info('Skipping auto-update check in development mode')
+      return { status: 'dev-mode', currentVersion }
+    }
+    const result = await autoUpdater.checkForUpdates()
+    return result?.updateInfo ? {
+      currentVersion,
+      latestVersion: result.updateInfo.version,
+      isUpdateAvailable: true,
+      releaseNotes: result.updateInfo.releaseNotes
+    } : null
+  } catch (error) {
+    log.error('Error checking for updates:', error)
+    return null
+  }
+})
+
+ipcMain.handle('download-update', async () => {
+  log.info('IPC: download-update called')
+  try {
+    await autoUpdater.downloadUpdate()
+    return true
+  } catch (error) {
+    log.error('Error downloading update:', error)
+    return false
+  }
+})
+
+ipcMain.handle('install-update', () => {
+  log.info('IPC: install-update called')
+  autoUpdater.quitAndInstall()
 })
 
 log.info('Main process initialized')

@@ -7,6 +7,22 @@ interface ScanProgress {
   store: string
 }
 
+interface UpdateStatus {
+  status: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error' | 'dev-mode'
+  version?: string
+  releaseNotes?: string
+  percent?: number
+  error?: string
+}
+
+interface UpdateInfo {
+  currentVersion: string
+  latestVersion?: string
+  isUpdateAvailable?: boolean
+  releaseNotes?: string
+  status?: string
+}
+
 interface Window {
   electronAPI: {
     getGames: () => Promise<import('./types').GameInfo[]>
@@ -20,12 +36,17 @@ interface Window {
     launchGame: (game: import('./types').GameInfo) => Promise<boolean>
     selectExecutable: () => Promise<string | null>
     selectImage: () => Promise<string | null>
+    saveGameCover: (gameId: string, imagePath: string) => Promise<string>
     getSettings: () => Promise<import('./types').Settings>
     saveSettings: (settings: import('./types').Settings) => Promise<boolean>
     windowMinimize: () => Promise<void>
     windowMaximize: () => Promise<void>
     windowClose: () => Promise<void>
     windowIsMaximized: () => Promise<boolean>
+    checkForUpdates: () => Promise<UpdateInfo | null>
+    downloadUpdate: () => Promise<boolean>
+    installUpdate: () => Promise<void>
     onScanProgress: (callback: (progress: ScanProgress) => void) => () => void
+    onUpdateStatus: (callback: (status: UpdateStatus) => void) => () => void
   }
 }
