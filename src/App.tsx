@@ -69,10 +69,16 @@ function App() {
       ])
       console.log('Games loaded:', loadedGames.length)
       console.log('Settings loaded:', loadedSettings)
+      
+      const settingsWithDefaults: Settings = {
+        theme: loadedSettings?.theme || 'dark',
+        scanOnStartup: loadedSettings?.scanOnStartup ?? true
+      }
+      
       setGames(loadedGames)
-      setSettings(loadedSettings)
+      setSettings(settingsWithDefaults)
 
-      if (loadedSettings.scanOnStartup && loadedGames.length === 0) {
+      if (settingsWithDefaults.scanOnStartup && loadedGames.length === 0) {
         await scanForGames()
       }
     } catch (error) {

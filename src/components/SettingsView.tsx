@@ -40,6 +40,10 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
     return unsubscribe
   }, [])
 
+  useEffect(() => {
+    onSave(localSettings)
+  }, [localSettings])
+
   const handleCheckForUpdates = async () => {
     setIsCheckingUpdate(true)
     await window.electronAPI.checkForUpdates()
@@ -63,10 +67,6 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
   }
 
   const themeColors = themes[localSettings.theme]
-
-  const handleSave = async () => {
-    await onSave(localSettings)
-  }
 
   const handleThemeChange = (theme: ThemeMode) => {
     const newSettings = { ...localSettings, theme }
@@ -121,7 +121,6 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
                   <button
                     onClick={() => {
                       setLocalSettings({ ...localSettings, scanOnStartup: !localSettings.scanOnStartup })
-                      setTimeout(handleSave, 0)
                     }}
                     className={`relative w-12 h-6 rounded-full transition-colors ${
                       localSettings.scanOnStartup ? 'bg-primary-600' : ''
@@ -269,9 +268,18 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
               <h2 className="text-lg font-semibold mb-4" style={{ color: themeColors.text }}>About</h2>
               
               <div className="space-y-3" style={{ color: themeColors.textSecondary }}>
-                <p className="text-2xl font-bold" style={{ color: themeColors.text }}>{project.name}</p>
-                <p>Version {project.version}</p>
-                <p>{project.description}</p>
+                <p className="text-2xl font-bold text-center" style={{ color: themeColors.text }}>{project.name}</p>
+                <p className="text-center">Version {project.version}</p>
+                <div className="flex justify-center py-4">
+                  <img src="/logo-big.png" alt="Logo" className="h-40 w-auto object-contain" draggable="false" />
+                </div>
+                <p>{project.description}<br></br><br></br>
+                  <span>This app is in early development.</span><br></br>
+                  <span>Feel free to give your feedback, we're always open for suggestions/ideas!</span>
+                </p>
+                <div className="flex justify-end pt-1">
+                  <span style={{fontSize: "14px"}}>From Portugal with ❤️</span>
+                </div>
               </div>
             </div>
 

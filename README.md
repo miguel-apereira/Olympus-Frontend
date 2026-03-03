@@ -22,16 +22,21 @@ As the Greek gods lived on Mount Olympus, so shall your games. Olympus Frontend 
 Olympus Frontend currently supports games from Steam and Epic Games Store, with more platforms coming soon!
 
 ## Planned Features
-
 The following features are planned to launch in the future:
 
-- Automatically close game clients, after you close a game.
-- Custom themes.
-- Custom filters.
 - Emulation support.
-- Fullscreen console-like experience.
-- Optional splash arts.
 - More game store support.
+- Optional splash arts.
+- Automatically close game clients, after you close a game.
+- Fullscreen console-like experience.
+
+### Customization
+- Custom Themes.
+- Custom Filters (Tabs).
+
+### External Integrations
+- SteamGridDB Integration.
+- HowLongToBeat Integration.
 
 ## Getting Started
 
