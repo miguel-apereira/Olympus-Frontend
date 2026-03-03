@@ -57,7 +57,8 @@
             "x64"
           ]
         }
-      ]
+      ],
+      "artifactName": "OlympusFrontend-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
