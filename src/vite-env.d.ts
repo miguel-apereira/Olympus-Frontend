@@ -52,6 +52,7 @@ interface Window {
     checkForUpdates: () => Promise<UpdateInfo | null>
     downloadUpdate: () => Promise<boolean>
     installUpdate: () => Promise<void>
+    launchStore: (storeName: string) => Promise<{ success: boolean; message?: string }>
     onScanProgress: (callback: (progress: ScanProgress) => void) => () => void
     onUpdateStatus: (callback: (status: UpdateStatus) => void) => () => void
   }

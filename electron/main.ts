@@ -2,13 +2,14 @@ import { app, BrowserWindow, ipcMain, shell, dialog, globalShortcut } from 'elec
 import path from 'path'
 import fs from 'fs'
 import { exec } from 'child_process'
+import { promises as fsPromises } from 'fs'
 import log from 'electron-log'
 import Store from 'electron-store'
 import { autoUpdater } from 'electron-updater'
 import { getSteamGames, getSteamLaunchUrl, getSteamInstallPath } from './getSteamGames'
 import { getEpicGames } from './getEpicGames'
 import { isAppRunning } from './gameProcess'
-import { updateStorePaths } from './getStoresPath'
+import { updateStorePaths, getEpicInstallPath } from './getStoresPath'
 import { GameInfo, Settings } from './types'
 
 const currentVersion = app.getVersion()
@@ -69,7 +70,7 @@ const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 function createWindow() {
   log.info('Creating main window...')
   
-  mainWindow = new BrowserWindow({
+   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 900,
@@ -79,11 +80,15 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: false
+      sandbox: false,
+      scrollBounce: false,
+      enablePreferredSizeMode: true
     },
     frame: false,
     titleBarStyle: 'hidden',
-    show: false
+    show: false,
+    // Hardware acceleration optimizations
+    transparent: false
   })
 
   mainWindow.once('ready-to-show', () => {
@@ -276,6 +281,46 @@ ipcMain.handle('remove-game', async (_, gameId: string) => {
   const filtered = games.filter(g => g.id !== gameId)
   store.set('games', filtered)
   return true
+})
+
+ipcMain.handle('launch-store', async (_, storeName: string) => {
+  log.info('IPC: launch-store called', storeName)
+  try {
+    if (storeName === 'steam') {
+      const steamPath = await getSteamInstallPath()
+      if (steamPath) {
+        const steamExe = path.join(steamPath, 'steam.exe')
+        const isSteamRunning = await isAppRunning('steam.exe')
+        
+        if (!isSteamRunning) {
+          log.info(`Launching Steam: ${steamExe}`)
+          exec(`"${steamExe}"`)
+        } else {
+          log.info('Steam is already running')
+        }
+      } else {
+        log.warn('Steam not found')
+        return { success: false, message: 'Steam not installed' }
+      }
+    } else if (storeName === 'epic') {
+      const epicPath = await getEpicInstallPath()
+      if (epicPath) {
+        log.info(`Launching Epic Games: ${epicPath}`)
+        exec(`"${epicPath}"`)
+      } else {
+        log.warn('Epic Games not found')
+        return { success: false, message: 'Epic Games not installed' }
+      }
+    } else {
+      log.warn(`Unknown store: ${storeName}`)
+      return { success: false, message: 'Unknown store' }
+    }
+    
+    return { success: true }
+  } catch (error) {
+    log.error('Error launching store:', error)
+    return { success: false, message: error instanceof Error ? error.message : 'Unknown error' }
+  }
 })
 
 ipcMain.handle('launch-game', async (_, game: GameInfo) => {

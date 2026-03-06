@@ -178,11 +178,35 @@ function App() {
 
   const handleEditGame = async (updatedGame: GameInfo) => {
     try {
-      await window.electronAPI.saveGames(games.map(g => g.id === updatedGame.id ? updatedGame : g))
-      setGames(prev => prev.map(g => g.id === updatedGame.id ? updatedGame : g))
+      let coverImage = updatedGame.coverImage
+      
+      // Handle cover image copying if a new image was selected
+      if (coverImage && !coverImage.includes('covers') && !coverImage.startsWith('file://')) {
+        try {
+          const savedPath = await window.electronAPI.saveGameCover(updatedGame.id, coverImage)
+          coverImage = savedPath
+        } catch (error) {
+          console.error('Error copying cover:', error)
+        }
+      }
+      
+      const finalGame = { ...updatedGame, coverImage }
+      await window.electronAPI.saveGames(games.map(g => g.id === updatedGame.id ? finalGame : g))
+      setGames(prev => prev.map(g => g.id === updatedGame.id ? finalGame : g))
       setEditingGame(null)
     } catch (error) {
       console.error('Error editing game:', error)
+    }
+  }
+
+  const handleLaunchStore = async (storeName: string) => {
+    try {
+      const result = await window.electronAPI.launchStore(storeName)
+      if (!result.success) {
+        console.error(`Error launching ${storeName}:`, result.message)
+      }
+    } catch (error) {
+      console.error('Error launching store:', error)
     }
   }
 
@@ -367,6 +391,7 @@ function App() {
           }}
           theme={settings.theme}
           storesFound={storesFound}
+          onLaunchStore={handleLaunchStore}
         />
         
         <main 

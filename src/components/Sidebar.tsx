@@ -12,9 +12,10 @@ interface SidebarProps {
     steam: boolean
     epic: boolean
   }
+  onLaunchStore?: (storeName: string) => void
 }
 
-export default function Sidebar({ currentView, onViewChange, gameCounts, theme, storesFound }: SidebarProps) {
+export default function Sidebar({ currentView, onViewChange, gameCounts, theme, storesFound, onLaunchStore }: SidebarProps) {
   const themeColors = themes[theme]
   
   const baseMenuItems: { id: ViewType; label: string; icon: React.ReactNode }[] = [
@@ -96,7 +97,42 @@ export default function Sidebar({ currentView, onViewChange, gameCounts, theme, 
             )}
           </button>
         ))}
-      </nav>
+        </nav>
+
+        {/* Store Launch Buttons Section */}
+        {onLaunchStore && (storesFound?.steam || storesFound?.epic) && (
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="h-px bg-theme-border flex-1"></div>
+              <span className="text-xs font-medium px-2" style={{ color: themeColors.textSecondary }}>
+                Clients
+              </span>
+              <div className="h-px bg-theme-border flex-1"></div>
+            </div>
+            <div className="flex justify-center gap-2">
+              {storesFound?.steam && (
+                <button
+                  onClick={() => onLaunchStore('steam')}
+                  className="p-2 rounded-lg hover:bg-theme-border transition-colors flex items-center justify-center"
+                  style={{ color: themeColors.textSecondary }}
+                  title={`Open ${project.supportedStoreNames.steam}`}
+                >
+                  <span className="text-base">{sidebarIcons.steam}</span>
+                </button>
+              )}
+              {storesFound?.epic && (
+                <button
+                  onClick={() => onLaunchStore('epic')}
+                  className="p-2 rounded-lg hover:bg-theme-border transition-colors flex items-center justify-center"
+                  style={{ color: themeColors.textSecondary }}
+                  title={`Open ${project.supportedStoreNames.epic}`}
+                >
+                  <span className="text-base">{sidebarIcons.epic}</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
       <div className="p-4 border-t" style={{ borderColor: themeColors.border }}>
         <p className="text-xs text-center" style={{ color: themeColors.textSecondary }}>

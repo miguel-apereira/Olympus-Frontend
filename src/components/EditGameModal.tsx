@@ -25,13 +25,9 @@ export default function EditGameModal({ game, onClose, onSave }: EditGameModalPr
   const handleSelectImage = async () => {
     const path = await window.electronAPI.selectImage()
     if (path) {
-      try {
-        const savedPath = await window.electronAPI.saveGameCover(game.id, path)
-        setCoverImage(savedPath)
-      } catch (error) {
-        console.error('Error saving cover:', error)
-        setCoverImage(path)
-      }
+      // Set the selected path directly for preview
+      // The actual saving will happen when the user clicks Save
+      setCoverImage(path)
     }
   }
 

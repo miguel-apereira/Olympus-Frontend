@@ -70,6 +70,7 @@ const electronAPI = {
   checkForUpdates: (): Promise<UpdateInfo | null> => ipcRenderer.invoke('check-for-updates'),
   downloadUpdate: (): Promise<boolean> => ipcRenderer.invoke('download-update'),
   installUpdate: (): Promise<void> => ipcRenderer.invoke('install-update'),
+  launchStore: (storeName: string): Promise<{ success: boolean; message?: string }> => ipcRenderer.invoke('launch-store', storeName),
   onScanProgress: (callback: (progress: { current: number; total: number; currentGame: string; store: string }) => void) => {
     const handler = (_: unknown, progress: { current: number; total: number; currentGame: string; store: string }) => callback(progress)
     ipcRenderer.on('scan-progress', handler)
