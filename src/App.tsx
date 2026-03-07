@@ -6,6 +6,7 @@ import SettingsView from './components/SettingsView'
 import TitleBar from './components/TitleBar'
 import ScanProgressModal from './components/ScanProgressModal'
 import EditGameModal from './components/EditGameModal'
+import ChangelogModal from './components/ChangelogModal'
 import { GameInfo, ViewType, Settings } from './types'
 import { project, labels, themes } from './config'
 
@@ -24,11 +25,13 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingGame, setEditingGame] = useState<GameInfo | null>(null)
-  const [settings, setSettings] = useState<Settings>({ theme: 'dark', scanOnStartup: true })
+  const [settings, setSettings] = useState<Settings>({ theme: 'dark', scanOnStartup: true, hardwareAcceleration: true })
+  const [storesFound, setStoresFound] = useState<{ steam: boolean; epic: boolean }>({ steam: true, epic: true })
   const [isScanning, setIsScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [scanProgress, setScanProgress] = useState<{ current: number; total: number; currentGame: string; store: string } | null>(null)
   const [updateStatus, setUpdateStatus] = useState<{ status: string; version?: string; percent?: number; error?: string } | null>(null)
+  const [showChangelog, setShowChangelog] = useState(false)
 
   const themeColors = themes[settings.theme]
 
@@ -63,14 +66,21 @@ function App() {
   const loadInitialData = async () => {
     try {
       console.log('Loading initial data...')
-      const [loadedGames, loadedSettings, favorites] = await Promise.all([
+      const [loadedGames, loadedSettings, favorites, storePaths] = await Promise.all([
         window.electronAPI.getGames(),
         window.electronAPI.getSettings(),
-        window.electronAPI.getFavorites()
+        window.electronAPI.getFavorites(),
+        window.electronAPI.getStorePaths()
       ])
       console.log('Games loaded:', loadedGames.length)
       console.log('Settings loaded:', loadedSettings)
       console.log('Favorites loaded:', favorites)
+      console.log('Store paths:', storePaths)
+      
+      setStoresFound({
+        steam: !!storePaths.steamPath,
+        epic: !!storePaths.epicPath
+      })
       
       const favoriteSet = new Set(favorites)
       const gamesWithFavorites = loadedGames.map(g => ({
@@ -80,7 +90,8 @@ function App() {
       
       const settingsWithDefaults: Settings = {
         theme: loadedSettings?.theme || 'dark',
-        scanOnStartup: loadedSettings?.scanOnStartup ?? true
+        scanOnStartup: loadedSettings?.scanOnStartup ?? true,
+        hardwareAcceleration: loadedSettings?.hardwareAcceleration ?? true
       }
       
       setGames(gamesWithFavorites)
@@ -169,11 +180,35 @@ function App() {
 
   const handleEditGame = async (updatedGame: GameInfo) => {
     try {
-      await window.electronAPI.saveGames(games.map(g => g.id === updatedGame.id ? updatedGame : g))
-      setGames(prev => prev.map(g => g.id === updatedGame.id ? updatedGame : g))
+      let coverImage = updatedGame.coverImage
+      
+      // Handle cover image copying if a new image was selected
+      if (coverImage && !coverImage.includes('covers') && !coverImage.startsWith('file://')) {
+        try {
+          const savedPath = await window.electronAPI.saveGameCover(updatedGame.id, coverImage)
+          coverImage = savedPath
+        } catch (error) {
+          console.error('Error copying cover:', error)
+        }
+      }
+      
+      const finalGame = { ...updatedGame, coverImage }
+      await window.electronAPI.saveGames(games.map(g => g.id === updatedGame.id ? finalGame : g))
+      setGames(prev => prev.map(g => g.id === updatedGame.id ? finalGame : g))
       setEditingGame(null)
     } catch (error) {
       console.error('Error editing game:', error)
+    }
+  }
+
+  const handleLaunchStore = async (storeName: string) => {
+    try {
+      const result = await window.electronAPI.launchStore(storeName)
+      if (!result.success) {
+        console.error(`Error launching ${storeName}:`, result.message)
+      }
+    } catch (error) {
+      console.error('Error launching store:', error)
     }
   }
 
@@ -289,26 +324,32 @@ function App() {
 
   return (
     <div className="h-screen w-screen flex flex-col" style={appStyle}>
-      <TitleBar theme={settings.theme} />
+      <TitleBar theme={settings.theme} onSettingsClick={() => setCurrentView('settings')} />
       
-      {updateStatus && updateStatus.status === 'available' && (
-        <div className="bg-primary-600 px-4 py-2 flex items-center justify-between text-white">
-          <div className="flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            <span>Update {updateStatus.version} available</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => window.electronAPI.downloadUpdate()}
-              className="px-3 py-1 bg-white text-primary-600 rounded text-sm font-medium hover:bg-gray-100"
-            >
-              Download & Install
-            </button>
-          </div>
-        </div>
-      )}
+       {updateStatus && updateStatus.status === 'available' && (
+         <div className="bg-primary-600 px-4 py-2 flex items-center justify-between text-white">
+           <div className="flex items-center gap-2">
+             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+             </svg>
+             <span>Update {updateStatus.version} available</span>
+           </div>
+           <div className="flex items-center gap-2">
+             <button
+               onClick={() => setShowChangelog(true)}
+               className="px-3 py-1 bg-white bg-opacity-20 text-white rounded text-sm font-medium hover:bg-opacity-30"
+             >
+               What's new
+             </button>
+             <button
+               onClick={() => window.electronAPI.downloadUpdate()}
+               className="px-3 py-1 bg-white text-primary-600 rounded text-sm font-medium hover:bg-gray-100"
+             >
+               Download & Install
+             </button>
+           </div>
+         </div>
+       )}
 
       {updateStatus && updateStatus.status === 'downloading' && (
         <div className="bg-blue-600 px-4 py-2 flex items-center justify-between text-white">
@@ -357,6 +398,8 @@ function App() {
             custom: games.filter(g => g.store === 'custom').length
           }}
           theme={settings.theme}
+          storesFound={storesFound}
+          onLaunchStore={handleLaunchStore}
         />
         
         <main 
@@ -464,12 +507,18 @@ function App() {
         />
       )}
 
-      <ScanProgressModal
-        isOpen={isScanning}
-        progress={scanProgress}
-      />
-    </div>
-  )
+       <ScanProgressModal
+         isOpen={isScanning}
+         progress={scanProgress}
+       />
+
+       <ChangelogModal
+         isOpen={showChangelog}
+         onClose={() => setShowChangelog(false)}
+         version={updateStatus?.version}
+       />
+     </div>
+   )
 }
 
 export default App

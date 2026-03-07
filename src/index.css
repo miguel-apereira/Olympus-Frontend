@@ -12,6 +12,13 @@
   -webkit-user-select: none;
 }
 
+/* Hardware acceleration optimizations */
+html, body {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
 html, body, #root {
   height: 100%;
   width: 100%;
@@ -42,11 +49,21 @@ body {
 
 .game-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .game-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3), 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.game-card img {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  image-rendering: pixelated;
 }
 
 .game-card:active {

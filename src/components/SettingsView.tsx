@@ -20,6 +20,7 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
   const [hiddenGames, setHiddenGames] = useState<GameInfo[]>([])
   const [updateStatus, setUpdateStatus] = useState<{ status: string; version?: string; percent?: number; error?: string } | null>(null)
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false)
+  const [showRestartMessage, setShowRestartMessage] = useState(false)
 
   useEffect(() => {
     setLocalSettings(settings)
@@ -79,7 +80,7 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
   const currentTheme = themesList.find(t => t.id === localSettings.theme) || themesList[1]
 
   const tabs: { id: SettingsTab; label: string }[] = [
-    { id: 'library', label: labels.settings.library },
+    { id: 'library', label: labels.settings.application },
     { id: 'hidden', label: 'Hidden' },
     { id: 'appearance', label: labels.settings.appearance },
     { id: 'about', label: 'About' }
@@ -161,6 +162,47 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
                     )}
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl p-6" style={{ backgroundColor: themeColors.card, border: `1px solid ${themeColors.border}` }}>
+              <h2 className="text-lg font-semibold mb-4" style={{ color: themeColors.text }}>{labels.settings.application}</h2>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium" style={{ color: themeColors.text }}>{labels.settings.hardwareAcceleration}</p>
+                    <p className="text-sm" style={{ color: themeColors.textSecondary }}>{labels.settings.hardwareAccelerationDescription}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const newValue = !localSettings.hardwareAcceleration
+                      setLocalSettings({ ...localSettings, hardwareAcceleration: newValue })
+                      setShowRestartMessage(true)
+                    }}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                      localSettings.hardwareAcceleration ? 'bg-primary-600' : ''
+                    }`}
+                    style={{ backgroundColor: localSettings.hardwareAcceleration ? undefined : themeColors.border }}
+                  >
+                    <span 
+                      className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                        localSettings.hardwareAcceleration ? 'left-7' : 'left-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                {showRestartMessage && (
+                  <div className="p-3 rounded-lg bg-yellow-500/20 border border-yellow-500/50 flex items-center justify-between">
+                    <p className="text-sm" style={{ color: themeColors.text }}>Restart required for changes to take effect</p>
+                    <button
+                      onClick={() => window.electronAPI.restartApp()}
+                      className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-sm rounded-lg transition-colors"
+                    >
+                      Restart Now
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

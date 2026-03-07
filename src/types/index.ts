@@ -18,6 +18,17 @@ export interface GameInfo {
 export interface Settings {
   theme: ThemeMode
   scanOnStartup: boolean
+  hardwareAcceleration: boolean
 }
 
 export type ViewType = 'all' | 'favorites' | 'recent' | 'steam' | 'epic' | 'custom' | 'settings'
+
+export interface UpdateStatus {
+  status: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error' | 'dev-mode'
+  version?: string
+  releaseNotes?: string
+  percent?: number
+  error?: string
+}
+
+

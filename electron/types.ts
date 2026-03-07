@@ -16,4 +16,5 @@ export interface GameInfo {
 export interface Settings {
   theme: string
   scanOnStartup: boolean
+  hardwareAcceleration: boolean
 }

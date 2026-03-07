@@ -2,12 +2,14 @@ import { app, BrowserWindow, ipcMain, shell, dialog, globalShortcut } from 'elec
 import path from 'path'
 import fs from 'fs'
 import { exec } from 'child_process'
+import { promises as fsPromises } from 'fs'
 import log from 'electron-log'
 import Store from 'electron-store'
 import { autoUpdater } from 'electron-updater'
 import { getSteamGames, getSteamLaunchUrl, getSteamInstallPath } from './getSteamGames'
 import { getEpicGames } from './getEpicGames'
 import { isAppRunning } from './gameProcess'
+import { updateStorePaths, getEpicInstallPath } from './getStoresPath'
 import { GameInfo, Settings } from './types'
 
 const currentVersion = app.getVersion()
@@ -16,7 +18,23 @@ log.transports.file.level = 'info'
 log.transports.console.level = 'debug'
 log.info('Application starting...')
 
-app.disableHardwareAcceleration()
+const settingsFilePath = path.join(app.getPath('userData'), 'config', 'settings.json')
+let hardwareAccelerationEnabled = true
+
+if (fs.existsSync(settingsFilePath)) {
+  try {
+    const settingsData = JSON.parse(fs.readFileSync(settingsFilePath, 'utf-8'))
+    hardwareAccelerationEnabled = settingsData.settings?.hardwareAcceleration ?? true
+    log.info(`Hardware acceleration setting: ${hardwareAccelerationEnabled}`)
+  } catch (error) {
+    log.error('Error reading settings:', error)
+  }
+}
+
+if (!hardwareAccelerationEnabled) {
+  app.disableHardwareAcceleration()
+  log.info('Hardware acceleration disabled')
+}
 
 process.on('uncaughtException', (error) => {
   log.error('Uncaught Exception:', error)
@@ -39,7 +57,8 @@ const store = new Store({
     favorites: [],
     settings: {
       theme: 'dark',
-      scanOnStartup: true
+      scanOnStartup: true,
+      hardwareAcceleration: true
     }
   }
 })
@@ -51,7 +70,7 @@ const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 function createWindow() {
   log.info('Creating main window...')
   
-  mainWindow = new BrowserWindow({
+   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 900,
@@ -61,11 +80,15 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: false
+      sandbox: false,
+      scrollBounce: false,
+      enablePreferredSizeMode: true
     },
     frame: false,
     titleBarStyle: 'hidden',
-    show: false
+    show: false,
+    // Hardware acceleration optimizations
+    transparent: false
   })
 
   mainWindow.once('ready-to-show', () => {
@@ -92,6 +115,7 @@ function createWindow() {
 
 app.whenReady().then(() => {
   log.info('App ready')
+  updateStorePaths()
   createWindow()
 
   globalShortcut.register('CommandOrControl+Shift+I', () => {
@@ -259,6 +283,46 @@ ipcMain.handle('remove-game', async (_, gameId: string) => {
   return true
 })
 
+ipcMain.handle('launch-store', async (_, storeName: string) => {
+  log.info('IPC: launch-store called', storeName)
+  try {
+    if (storeName === 'steam') {
+      const steamPath = await getSteamInstallPath()
+      if (steamPath) {
+        const steamExe = path.join(steamPath, 'steam.exe')
+        const isSteamRunning = await isAppRunning('steam.exe')
+        
+        if (!isSteamRunning) {
+          log.info(`Launching Steam: ${steamExe}`)
+          exec(`"${steamExe}"`)
+        } else {
+          log.info('Steam is already running')
+        }
+      } else {
+        log.warn('Steam not found')
+        return { success: false, message: 'Steam not installed' }
+      }
+    } else if (storeName === 'epic') {
+      const epicPath = await getEpicInstallPath()
+      if (epicPath) {
+        log.info(`Launching Epic Games: ${epicPath}`)
+        exec(`"${epicPath}"`)
+      } else {
+        log.warn('Epic Games not found')
+        return { success: false, message: 'Epic Games not installed' }
+      }
+    } else {
+      log.warn(`Unknown store: ${storeName}`)
+      return { success: false, message: 'Unknown store' }
+    }
+    
+    return { success: true }
+  } catch (error) {
+    log.error('Error launching store:', error)
+    return { success: false, message: error instanceof Error ? error.message : 'Unknown error' }
+  }
+})
+
 ipcMain.handle('launch-game', async (_, game: GameInfo) => {
   log.info('IPC: launch-game called', game.name)
   try {
@@ -371,8 +435,24 @@ ipcMain.handle('get-settings', async () => {
   return store.get('settings')
 })
 
-ipcMain.handle('save-settings', async (_, settings: { theme: string; scanOnStartup: boolean }) => {
-  store.set('settings', settings)
+ipcMain.handle('refresh-store-paths', async () => {
+  return await updateStorePaths()
+})
+
+ipcMain.handle('get-store-paths', async () => {
+  const settings = store.get('settings') as { gameClients?: { steam?: string | null; epic?: string | null } }
+  return {
+    steamPath: settings?.gameClients?.steam || null,
+    epicPath: settings?.gameClients?.epic || null
+  }
+})
+
+ipcMain.handle('save-settings', async (_, settings: { theme: string; scanOnStartup: boolean; hardwareAcceleration: boolean }) => {
+  const currentSettings = store.get('settings') as Record<string, unknown>
+  store.set('settings', {
+    ...currentSettings,
+    ...settings
+  })
   return true
 })
 
@@ -415,6 +495,11 @@ ipcMain.handle('window-close', () => {
 
 ipcMain.handle('window-is-maximized', () => {
   return mainWindow?.isMaximized() ?? false
+})
+
+ipcMain.handle('restart-app', () => {
+  app.relaunch()
+  app.exit(0)
 })
 
 autoUpdater.logger = log
@@ -498,6 +583,21 @@ ipcMain.handle('download-update', async () => {
 ipcMain.handle('install-update', () => {
   log.info('IPC: install-update called')
   autoUpdater.quitAndInstall()
+})
+
+ipcMain.handle('fetch-changelog', async () => {
+  log.info('IPC: fetch-changelog called')
+  try {
+    const response = await fetch('https://raw.githubusercontent.com/wiki/miguel-apereira/Olympus-Frontend/Changelog.md')
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const content = await response.text()
+    return { content, error: undefined }
+  } catch (error) {
+    log.error('Error fetching changelog:', error)
+    return { content: '', error: error instanceof Error ? error.message : 'Unknown error' }
+  }
 })
 
 log.info('Main process initialized')
