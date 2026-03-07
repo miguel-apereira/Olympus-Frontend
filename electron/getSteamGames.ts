@@ -152,12 +152,18 @@ async function parseLibraryFoldersVDF(steamPath: string): Promise<string[]> {
       const extractedPaths = extractPaths(parsed)
       log.info(`Extracted paths: ${extractedPaths.join(', ')}`)
       
-      for (const p of extractedPaths) {
-        if (!libraryPaths.includes(p)) {
-          libraryPaths.push(p)
-          log.info(`Found library: ${p}`)
-        }
-      }
+       for (const p of extractedPaths) {
+         // Normalize path by ensuring it ends with exactly one backslash
+         let normalizedPath = p.replace(/\\+$/, '\\')
+         if (!normalizedPath.endsWith('\\')) {
+           normalizedPath += '\\'
+         }
+         
+         if (!libraryPaths.includes(normalizedPath)) {
+           libraryPaths.push(normalizedPath)
+           log.info(`Found library: ${normalizedPath}`)
+         }
+       }
     } catch (e) {
       log.warn(`Could not parse libraryfolders.vdf at ${libraryFoldersPath}:`, e)
     }
@@ -305,10 +311,18 @@ export async function getSteamGames(drives?: string[]): Promise<SteamGame[]> {
 
     const libraryPaths = await parseLibraryFoldersVDF(steamPath)
 
-    const mainSteamAppsPath = path.join(steamPath, 'steamapps')
-    if (await fileExists(mainSteamAppsPath)) {
-      libraryPaths.unshift(steamPath.replace(/\\$/, ''))
-    }
+     const mainSteamAppsPath = path.join(steamPath, 'steamapps')
+     if (await fileExists(mainSteamAppsPath)) {
+       // Normalize the main steam path to match the format from parseLibraryFoldersVDF
+       let normalizedMainPath = steamPath.replace(/\$/, '')
+       if (!normalizedMainPath.endsWith('\\')) {
+         normalizedMainPath += '\\'
+       }
+       // Only add if not already in the list
+       if (!libraryPaths.includes(normalizedMainPath)) {
+         libraryPaths.unshift(normalizedMainPath)
+       }
+     }
 
     log.info(`Total libraries to scan: ${libraryPaths.length}`)
 
