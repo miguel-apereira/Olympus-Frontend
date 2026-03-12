@@ -98,20 +98,23 @@ export async function getSteamGridDBGrids(gameId: number): Promise<SteamGridDBGr
   }
 
   try {
-    const grids = await client.getGrids({ type: 'game', id: gameId })
+    const grids = await client.getGrids({ 
+      type: 'game', 
+      id: gameId,
+      dimensions: ['600x900', '660x930']
+    } as any)
     log.info('Raw grids count:', grids.length)
     
     const mapped = (grids as unknown as any[]).map((g: any) => {
       const url = typeof g.url === 'string' ? g.url : String(g.url || '')
       const thumb = typeof g.thumb === 'string' ? g.thumb : String(g.thumb || url)
-      log.info('Mapped grid - thumb:', thumb)
       return {
         id: g.id,
         url,
         thumb,
         style: g.style || '',
         dimensions: `${g.width || 0}x${g.height || 0}`,
-        likes: g.score ?? g.upvotes ?? 0
+        likes: g.upvotes || 0
       }
     })
     return mapped.sort((a, b) => b.likes - a.likes)
@@ -128,20 +131,21 @@ export async function getSteamGridDBGridsBySteamAppId(appId: string): Promise<St
   }
 
   try {
-    const grids = await client.getGridsBySteamAppId(Number(appId))
+    const grids = await client.getGridsBySteamAppId(Number(appId), {
+      dimensions: ['600x900', '660x930']
+    } as any)
     log.info('Raw grids by appid count:', grids.length)
     
     const mapped = (grids as unknown as any[]).map((g: any) => {
       const url = typeof g.url === 'string' ? g.url : String(g.url || '')
       const thumb = typeof g.thumb === 'string' ? g.thumb : String(g.thumb || url)
-      log.info('Mapped grid by appid - thumb:', thumb)
       return {
         id: g.id,
         url,
         thumb,
         style: g.style || '',
         dimensions: `${g.width || 0}x${g.height || 0}`,
-        likes: g.score ?? g.upvotes ?? 0
+        likes: g.upvotes || 0
       }
     })
     return mapped.sort((a, b) => b.likes - a.likes)
@@ -161,6 +165,7 @@ export async function downloadSteamGridDBCover(
     await fsPromises.mkdir(coversDir, { recursive: true })
 
     const ext = gridUrl.includes('.gif') ? '.gif' : 
+                 gridUrl.includes('.webp') ? '.webp' :
                  gridUrl.includes('.jpg') ? '.jpg' : '.png'
     const destPath = path.join(coversDir, `cover${ext}`)
 

@@ -258,33 +258,35 @@ export default function SteamGridDBModal({
               </div>
 
               <div className="grid grid-cols-3 gap-4">
-                {grids.slice(0, 9).map((grid) => (
-                  <button
-                    key={grid.id}
-                    onClick={() => handleDownload(grid)}
-                    disabled={isLoading}
-                    className="relative group rounded-lg overflow-hidden border-2 border-transparent hover:border-[#66c0f4] transition-all disabled:opacity-50"
-                  >
-                    <img
-                      src={grid.thumb}
-                      alt={`Cover ${grid.id}`}
-                      className="w-full aspect-[3/4] object-cover"
-                      loading="lazy"
-                      onError={(e) => {
-                        console.log('Image failed to load:', grid.thumb)
-                        e.currentTarget.src = grid.url
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
-                      <span className="text-white text-sm font-medium">
-                        {grid.likes} ❤️
-                      </span>
-                      <span className="text-white/70 text-xs">
-                        {grid.dimensions}
-                      </span>
-                    </div>
-                  </button>
-                ))}
+                {grids.map((grid) => {
+                  const [width, height] = grid.dimensions.split('x').map(Number)
+                  const aspectRatio = width && height ? width / height : 3/4
+                  
+                  return (
+                    <button
+                      key={grid.id}
+                      onClick={() => handleDownload(grid)}
+                      disabled={isLoading}
+                      className="relative group rounded-lg overflow-hidden border-2 border-transparent hover:border-[#66c0f4] transition-all disabled:opacity-50"
+                      style={{ aspectRatio: `${aspectRatio}` }}
+                    >
+                      <img
+                        src={grid.thumb}
+                        alt={`Cover ${grid.id}`}
+                        className="w-full h-full object-contain bg-[#1b2838]"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          console.log('Image failed to load:', grid.thumb)
+                          e.currentTarget.src = grid.url
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                        
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
 
               {grids.length === 0 && (
