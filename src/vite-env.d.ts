@@ -62,5 +62,6 @@ interface Window {
     downloadSteamGridDBCover: (gridUrl: string, gameId: string) => Promise<{ path: string; error?: string }>
     initSteamGridDB: (apiKey: string) => Promise<{ success: boolean; error?: string }>
     checkSteamGridDBStatus: () => Promise<{ initialized: boolean }>
+    openExternal: (url: string) => Promise<{ success: boolean; error?: string }>
   }
 }

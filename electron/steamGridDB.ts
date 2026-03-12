@@ -33,8 +33,11 @@ export async function searchSteamGridDB(query: string): Promise<SteamGridDBGame[
       types: g.types,
       verified: g.verified
     }))
-  } catch (error) {
-    log.error('Error searching SteamGridDB:', error)
+  } catch (error: any) {
+    log.error('Error searching SteamGridDB:', error?.message || error, error?.response?.status)
+    if (error?.response?.status === 401 || error?.response?.status === 403 || error?.message?.includes('401') || error?.message?.includes('403') || error?.message?.includes('Unauthorized') || error?.message?.includes('Forbidden')) {
+      throw new Error('INVALID_API_KEY')
+    }
     throw error
   }
 }

@@ -96,6 +96,7 @@ interface ElectronAPI {
   downloadSteamGridDBCover: (gridUrl: string, gameId: string) => Promise<{ path: string; error?: string }>
   initSteamGridDB: (apiKey: string) => Promise<{ success: boolean; error?: string }>
   checkSteamGridDBStatus: () => Promise<{ initialized: boolean }>
+  openExternal: (url: string) => Promise<{ success: boolean; error?: string }>
 }
 
 const electronAPI: ElectronAPI = {
@@ -143,7 +144,8 @@ const electronAPI: ElectronAPI = {
   getSteamGridDBGridsByAppId: (appId: string): Promise<{ grids: SteamGridDBGrid[]; error?: string }> => ipcRenderer.invoke('get-steamgriddb-grids-by-appid', appId),
   downloadSteamGridDBCover: (gridUrl: string, gameId: string): Promise<{ path: string; error?: string }> => ipcRenderer.invoke('download-steamgriddb-cover', gridUrl, gameId),
   initSteamGridDB: (apiKey: string): Promise<{ success: boolean; error?: string }> => ipcRenderer.invoke('init-steamgriddb', apiKey),
-  checkSteamGridDBStatus: (): Promise<{ initialized: boolean }> => ipcRenderer.invoke('check-steamgriddb-status')
+  checkSteamGridDBStatus: (): Promise<{ initialized: boolean }> => ipcRenderer.invoke('check-steamgriddb-status'),
+  openExternal: (url: string): Promise<{ success: boolean; error?: string }> => ipcRenderer.invoke('open-external', url)
 }
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI)

@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react'
 import { Settings, GameInfo } from '../types'
 import { project, labels, themesList, ThemeMode, themes } from '../config'
 import logoBigUrl from '../assets/logo-big.png'
-import { shell } from 'electron'
 
-type SettingsTab = 'library' | 'appearance' | 'hidden' | 'about' | 'integrations'
+type SettingsTab = 'application' | 'hidden' | 'about' | 'integrations'
 
 interface SettingsViewProps {
   settings: Settings
@@ -17,14 +16,19 @@ interface SettingsViewProps {
 export default function SettingsView({ settings, onSave, onScanGames, isScanning, onRefreshGames }: SettingsViewProps) {
   const [localSettings, setLocalSettings] = useState<Settings>(settings)
   const [themeDropdownOpen, setThemeDropdownOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<SettingsTab>('library')
+  const [activeTab, setActiveTab] = useState<SettingsTab>('application')
   const [hiddenGames, setHiddenGames] = useState<GameInfo[]>([])
   const [updateStatus, setUpdateStatus] = useState<{ status: string; version?: string; percent?: number; error?: string } | null>(null)
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false)
   const [showRestartMessage, setShowRestartMessage] = useState(false)
+  const [isTestingConnection, setIsTestingConnection] = useState(false)
+  const [connectionTestResult, setConnectionTestResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [apiKeyConfirmed, setApiKeyConfirmed] = useState(!!settings.integrations?.steamGridDBApiKey)
 
   useEffect(() => {
     setLocalSettings(settings)
+    const hasApiKey = !!(settings.integrations && settings.integrations.steamGridDBApiKey && settings.integrations.steamGridDBApiKey.length > 0)
+    setApiKeyConfirmed(hasApiKey)
   }, [settings])
 
   useEffect(() => {
@@ -42,10 +46,6 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
     })
     return unsubscribe
   }, [])
-
-  useEffect(() => {
-    onSave(localSettings)
-  }, [localSettings])
 
   const handleCheckForUpdates = async () => {
     setIsCheckingUpdate(true)
@@ -81,10 +81,9 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
   const currentTheme = themesList.find(t => t.id === localSettings.theme) || themesList[1]
 
   const tabs: { id: SettingsTab; label: string }[] = [
-    { id: 'library', label: labels.settings.application },
+    { id: 'application', label: 'Application' },
+    { id: 'hidden', label: 'Hidden Games' },
     { id: 'integrations', label: 'Integrations' },
-    { id: 'hidden', label: 'Hidden' },
-    { id: 'appearance', label: labels.settings.appearance },
     { id: 'about', label: 'About' }
   ]
 
@@ -111,7 +110,7 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
           ))}
         </div>
 
-        {activeTab === 'library' && (
+        {activeTab === 'application' && (
           <div className="space-y-6">
             <div className="rounded-xl p-6" style={{ backgroundColor: themeColors.card, border: `1px solid ${themeColors.border}` }}>
               <h2 className="text-lg font-semibold mb-4" style={{ color: themeColors.text }}>{labels.settings.library}</h2>
@@ -168,6 +167,57 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
             </div>
 
             <div className="rounded-xl p-6" style={{ backgroundColor: themeColors.card, border: `1px solid ${themeColors.border}` }}>
+              <h2 className="text-lg font-semibold mb-4" style={{ color: themeColors.text }}>{labels.settings.appearance}</h2>
+              
+              <div className="space-y-4">
+                <div>
+                  <p className="font-medium mb-1" style={{ color: themeColors.text }}>{labels.settings.theme}</p>
+                  <p className="text-sm mb-3" style={{ color: themeColors.textSecondary }}>{labels.settings.themeDescription}</p>
+                  
+                  <div className="relative">
+                    <button
+                      onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}
+                      className="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors"
+                      style={{ 
+                        backgroundColor: themeColors.surface, 
+                        border: `1px solid ${themeColors.border}`,
+                        color: themeColors.text 
+                      }}
+                    >
+                      <span>{currentTheme.name}</span>
+                      <svg className={`w-5 h-5 transition-transform ${themeDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    {themeDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 rounded-lg shadow-xl z-10 overflow-hidden" style={{ backgroundColor: themeColors.surface, border: `1px solid ${themeColors.border}` }}>
+                        {themesList.map((theme) => (
+                          <button
+                            key={theme.id}
+                            onClick={() => handleThemeChange(theme.id)}
+                            className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors"
+                            style={{ 
+                              backgroundColor: localSettings.theme === theme.id ? '#0284c7' : undefined,
+                              color: localSettings.theme === theme.id ? 'white' : themeColors.text 
+                            }}
+                          >
+                            <span>{theme.name}</span>
+                            {localSettings.theme === theme.id && (
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl p-6" style={{ backgroundColor: themeColors.card, border: `1px solid ${themeColors.border}` }}>
               <h2 className="text-lg font-semibold mb-4" style={{ color: themeColors.text }}>{labels.settings.application}</h2>
               
               <div className="space-y-4">
@@ -218,26 +268,77 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
               <div className="space-y-4">
                 <div>
                   <p className="font-medium mb-2" style={{ color: themeColors.text }}>API Key</p>
-                  <p className="text-sm mb-3" style={{ color: themeColors.textSecondary }}>
-                    Required to download game covers. Get your free API key from{' '}
-                    <button
-                      onClick={() => shell.openExternal('https://www.steamgriddb.com/profile/preferences/api')}
-                      className="text-primary-400 hover:text-primary-300 underline"
-                    >
-                      steamgriddb.com
-                    </button>
-                  </p>
-                  <input
-                    type="password"
-                    value={localSettings.steamGridDBApiKey || ''}
-                    onChange={(e) => {
-                      const newSettings = { ...localSettings, steamGridDBApiKey: e.target.value }
-                      setLocalSettings(newSettings)
-                      window.electronAPI.initSteamGridDB(e.target.value)
-                    }}
-                    placeholder="Enter your SteamGridDB API key"
-                    className="w-full px-4 py-2 bg-theme-bg border border-theme-border rounded-lg text-theme-text"
-                  />
+                  {!apiKeyConfirmed ? (
+                    <>
+                      <p className="text-sm mb-3" style={{ color: themeColors.textSecondary }}>
+                        Required to download game covers. Get your free API key from{' '}
+                        <button
+                          onClick={() => window.electronAPI.openExternal('https://www.steamgriddb.com/profile/preferences/api')}
+                          className="text-primary-400 hover:text-primary-300 underline"
+                        >
+                          steamgriddb.com
+                        </button>
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="password"
+                          value={localSettings.integrations?.steamGridDBApiKey || ''}
+                          onChange={(e) => {
+                            const newSettings = { ...localSettings, integrations: { ...localSettings.integrations, steamGridDBApiKey: e.target.value } }
+                            setLocalSettings(newSettings)
+                            setConnectionTestResult(null)
+                            setApiKeyConfirmed(false)
+                          }}
+                          placeholder="Enter your SteamGridDB API key"
+                          className="flex-1 px-4 py-2 bg-theme-bg border border-theme-border rounded-lg text-theme-text"
+                        />
+                        <button
+                          onClick={async () => {
+                            if (!localSettings.integrations?.steamGridDBApiKey) return
+                            setIsTestingConnection(true)
+                            setConnectionTestResult(null)
+                            
+                            const result = await window.electronAPI.initSteamGridDB(localSettings.integrations.steamGridDBApiKey)
+                            
+                            if (result.success) {
+                              setConnectionTestResult({ success: true, message: 'Connection successful!' })
+                              setApiKeyConfirmed(true)
+                              onSave(localSettings)
+                            } else {
+                              setConnectionTestResult({ success: false, message: result.error || 'Invalid API key' })
+                              setApiKeyConfirmed(false)
+                            }
+                            setIsTestingConnection(false)
+                          }}
+                          disabled={!localSettings.integrations?.steamGridDBApiKey || isTestingConnection}
+                          className="px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 text-white rounded-lg transition-colors"
+                        >
+                          {isTestingConnection ? 'Testing...' : 'Test Connection'}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-400">API key configured</span>
+                      <button
+                        onClick={() => {
+                          const newSettings = { ...localSettings, integrations: { ...localSettings.integrations, steamGridDBApiKey: '' } }
+                          setLocalSettings(newSettings)
+                          setApiKeyConfirmed(false)
+                          setConnectionTestResult(null)
+                          onSave(newSettings)
+                        }}
+                        className="text-primary-400 hover:text-primary-300 underline text-sm"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                  {connectionTestResult && !apiKeyConfirmed && (
+                    <p className={`mt-2 text-sm ${connectionTestResult.success ? 'text-green-400' : 'text-red-400'}`}>
+                      {connectionTestResult.message}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -250,7 +351,7 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
               <h2 className="text-lg font-semibold mb-4" style={{ color: themeColors.text }}>Hidden Games</h2>
               
               {hiddenGames.length === 0 ? (
-                <p style={{ color: themeColors.textSecondary }}>No hidden games</p>
+                <p style={{ color: themeColors.textSecondary }}>You don't have any hidden games!</p>
               ) : (
                 <div className="space-y-2">
                   {hiddenGames.map((game) => (
@@ -282,61 +383,6 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
                   ))}
                 </div>
               )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'appearance' && (
-          <div className="space-y-6">
-            <div className="rounded-xl p-6" style={{ backgroundColor: themeColors.card, border: `1px solid ${themeColors.border}` }}>
-              <h2 className="text-lg font-semibold mb-4" style={{ color: themeColors.text }}>{labels.settings.appearance}</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <p className="font-medium mb-1" style={{ color: themeColors.text }}>{labels.settings.theme}</p>
-                  <p className="text-sm mb-3" style={{ color: themeColors.textSecondary }}>{labels.settings.themeDescription}</p>
-                  
-                  <div className="relative">
-                    <button
-                      onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}
-                      className="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors"
-                      style={{ 
-                        backgroundColor: themeColors.surface, 
-                        border: `1px solid ${themeColors.border}`,
-                        color: themeColors.text 
-                      }}
-                    >
-                      <span>{currentTheme.name}</span>
-                      <svg className={`w-5 h-5 transition-transform ${themeDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    
-                    {themeDropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-1 rounded-lg shadow-xl z-10 overflow-hidden" style={{ backgroundColor: themeColors.surface, border: `1px solid ${themeColors.border}` }}>
-                        {themesList.map((theme) => (
-                          <button
-                            key={theme.id}
-                            onClick={() => handleThemeChange(theme.id)}
-                            className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors"
-                            style={{ 
-                              backgroundColor: localSettings.theme === theme.id ? '#0284c7' : undefined,
-                              color: localSettings.theme === theme.id ? 'white' : themeColors.text 
-                            }}
-                          >
-                            <span>{theme.name}</span>
-                            {localSettings.theme === theme.id && (
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         )}

@@ -1,5 +1,5 @@
 export const project = {
-  name: 'Olympus Frontend',
+  name: 'Olympus',
   version: '1.2.0',
   description: 'Let your games reside in Mount Olympus and launch them from there.',
   author: 'Salierus',

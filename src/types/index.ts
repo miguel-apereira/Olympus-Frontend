@@ -19,7 +19,9 @@ export interface Settings {
   theme: ThemeMode
   scanOnStartup: boolean
   hardwareAcceleration: boolean
-  steamGridDBApiKey?: string
+  integrations?: {
+    steamGridDBApiKey?: string
+  }
 }
 
 export type ViewType = 'all' | 'favorites' | 'recent' | 'steam' | 'epic' | 'custom' | 'settings'

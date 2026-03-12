@@ -127,8 +127,8 @@ app.whenReady().then(() => {
   updateStorePaths()
   
   const currentSettings = store.get('settings') as Settings
-  if (currentSettings.steamGridDBApiKey) {
-    initSteamGridDB(currentSettings.steamGridDBApiKey)
+  if (currentSettings.integrations?.steamGridDBApiKey) {
+    initSteamGridDB(currentSettings.integrations.steamGridDBApiKey)
   }
   
   createWindow()
@@ -673,15 +673,33 @@ ipcMain.handle('init-steamgriddb', async (_, apiKey: string) => {
   log.info('IPC: init-steamgriddb called')
   try {
     initSteamGridDB(apiKey)
+    
+    await searchSteamGridDB('test-validation-12345')
+    
     return { success: true }
-  } catch (error) {
-    log.error('Error initializing SteamGridDB:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  } catch (error: any) {
+    log.error('Error initializing SteamGridDB:', error?.message || error)
+    initSteamGridDB('')
+    if (error?.message === 'INVALID_API_KEY' || error?.message?.includes('401') || error?.message?.includes('403') || error?.message?.includes('Unauthorized') || error?.message?.includes('Forbidden')) {
+      return { success: false, error: 'Invalid API key' }
+    }
+    return { success: false, error: error.message || 'Failed to validate API key' }
   }
 })
 
 ipcMain.handle('check-steamgriddb-status', async () => {
   return { initialized: isClientInitialized() }
+})
+
+ipcMain.handle('open-external', async (_, url: string) => {
+  log.info('IPC: open-external called', url)
+  try {
+    await shell.openExternal(url)
+    return { success: true }
+  } catch (error) {
+    log.error('Error opening external URL:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
 })
 
 log.info('Main process initialized')

@@ -91,7 +91,8 @@ function App() {
       const settingsWithDefaults: Settings = {
         theme: loadedSettings?.theme || 'dark',
         scanOnStartup: loadedSettings?.scanOnStartup ?? true,
-        hardwareAcceleration: loadedSettings?.hardwareAcceleration ?? true
+        hardwareAcceleration: loadedSettings?.hardwareAcceleration ?? true,
+        integrations: loadedSettings?.integrations
       }
       
       setGames(gamesWithFavorites)
