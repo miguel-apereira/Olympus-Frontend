@@ -297,7 +297,6 @@ export default function SteamGridDBModal({
 
           {step === 'error' && (
             <div className="text-center py-8">
-              <p className="text-gray-400 mb-4">{error || 'An error occurred'}</p>
               <button
                 onClick={() => performSearch(gameName)}
                 className="px-4 py-2 bg-[#1b2838] hover:bg-[#2a3f54] text-[#66c0f4] rounded-lg transition-colors"

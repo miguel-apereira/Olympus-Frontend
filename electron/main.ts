@@ -619,7 +619,7 @@ ipcMain.handle('fetch-changelog', async () => {
 ipcMain.handle('search-steamgriddb', async (_, query: string) => {
   log.info('IPC: search-steamgriddb called', query)
   if (!isClientInitialized()) {
-    return { error: 'SteamGridDB API key not configured' }
+    return { error: 'SteamGridDB API key not configured. You can set your API key in the settings.' }
   }
   try {
     const games = await searchSteamGridDB(query)
