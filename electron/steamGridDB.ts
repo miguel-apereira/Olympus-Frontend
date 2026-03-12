@@ -34,11 +34,36 @@ export async function searchSteamGridDB(query: string): Promise<SteamGridDBGame[
       verified: g.verified
     }))
   } catch (error: any) {
-    log.error('Error searching SteamGridDB:', error?.message || error, error?.response?.status)
-    if (error?.response?.status === 401 || error?.response?.status === 403 || error?.message?.includes('401') || error?.message?.includes('403') || error?.message?.includes('Unauthorized') || error?.message?.includes('Forbidden')) {
+    log.error('Error searching SteamGridDB:', JSON.stringify(error))
+    if (error?.response?.status === 401 || error?.response?.status === 403) {
+      throw new Error('INVALID_API_KEY')
+    }
+    const errorMsg = error?.message || String(error)
+    if (errorMsg.includes('401') || errorMsg.includes('403') || errorMsg.includes('Unauthorized') || errorMsg.includes('Forbidden') || errorMsg.toLowerCase().includes('unauthorized')) {
       throw new Error('INVALID_API_KEY')
     }
     throw error
+  }
+}
+
+export async function validateSteamGridDBKey(): Promise<boolean> {
+  if (!client) {
+    return false
+  }
+
+  try {
+    await client.getGrids({ type: 'game', id: 2254 })
+    return true
+  } catch (error: any) {
+    log.error('Validation error:', JSON.stringify(error))
+    if (error?.response?.status === 401 || error?.response?.status === 403) {
+      return false
+    }
+    const errorMsg = error?.message || String(error)
+    if (errorMsg.includes('401') || errorMsg.includes('403') || errorMsg.toLowerCase().includes('unauthorized') || errorMsg.toLowerCase().includes('forbidden')) {
+      return false
+    }
+    return true
   }
 }
 

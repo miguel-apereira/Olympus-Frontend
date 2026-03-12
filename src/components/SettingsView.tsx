@@ -301,7 +301,7 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
                             const result = await window.electronAPI.initSteamGridDB(localSettings.integrations.steamGridDBApiKey)
                             
                             if (result.success) {
-                              setConnectionTestResult({ success: true, message: 'Connection successful!' })
+                              setConnectionTestResult({ success: true, message: 'You API key is valid!' })
                               setApiKeyConfirmed(true)
                               onSave(localSettings)
                             } else {
@@ -313,13 +313,13 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
                           disabled={!localSettings.integrations?.steamGridDBApiKey || isTestingConnection}
                           className="px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 text-white rounded-lg transition-colors"
                         >
-                          {isTestingConnection ? 'Testing...' : 'Test Connection'}
+                          {isTestingConnection ? 'Testing...' : 'Save'}
                         </button>
                       </div>
                     </>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className="text-green-400">API key configured</span>
+                      <p className="text-green-400">You already provided a SteamGridDB API key.</p>
                       <button
                         onClick={() => {
                           const newSettings = { ...localSettings, integrations: { ...localSettings.integrations, steamGridDBApiKey: '' } }
@@ -330,7 +330,7 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
                         }}
                         className="text-primary-400 hover:text-primary-300 underline text-sm"
                       >
-                        Remove
+                        Remove API Key
                       </button>
                     </div>
                   )}

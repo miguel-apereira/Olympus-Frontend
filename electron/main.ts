@@ -18,7 +18,8 @@ import {
   getSteamGridDBGridsBySteamAppId,
   downloadSteamGridDBCover,
   isExactMatch,
-  isClientInitialized
+  isClientInitialized,
+  validateSteamGridDBKey
 } from './steamGridDB'
 
 const currentVersion = app.getVersion()
@@ -674,7 +675,10 @@ ipcMain.handle('init-steamgriddb', async (_, apiKey: string) => {
   try {
     initSteamGridDB(apiKey)
     
-    await searchSteamGridDB('test-validation-12345')
+    const isValid = await validateSteamGridDBKey()
+    if (!isValid) {
+      return { success: false, error: 'Invalid API key' }
+    }
     
     return { success: true }
   } catch (error: any) {
