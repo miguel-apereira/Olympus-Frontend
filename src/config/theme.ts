@@ -189,7 +189,8 @@ export const labels = {
     browse: 'Browse',
     cancel: 'Cancel',
     addGame: 'Add Game',
-    adding: 'Adding...'
+    adding: 'Adding...',
+    save: 'Save'
   },
   settings: {
     title: 'Settings',

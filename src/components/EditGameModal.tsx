@@ -14,7 +14,6 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
   const [name, setName] = useState(game.name)
   const [executablePath, setExecutablePath] = useState(game.executablePath)
   const [coverImage, setCoverImage] = useState(game.coverImage || '')
-  const [store, setStore] = useState(game.store)
   const [isLoading, setIsLoading] = useState(false)
   const [showSteamGridDB, setShowSteamGridDB] = useState(false)
 
@@ -42,7 +41,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name || !executablePath) return
+    if (!isStoreGame && (!name || !executablePath)) return
 
     setIsLoading(true)
     try {
@@ -56,8 +55,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
           ...game,
           name,
           executablePath,
-          coverImage: coverImage || undefined,
-          store
+          coverImage: coverImage || undefined
         })
       }
     } finally {
@@ -141,7 +139,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
               <button
                 type="button"
                 onClick={() => setShowSteamGridDB(true)}
-                className="px-4 py-2 bg-[#1b2838] border border-[#66c0f4]/30 rounded-lg text-[#66c0f4] hover:bg-[#1b2838]/80 transition-colors"
+                className="px-4 py-2 bg-theme-card border border-theme-border rounded-lg text-primary-500 hover:bg-theme-border transition-colors"
                 title="Download from SteamGridDB"
               >
                 SteamGridDB
@@ -160,29 +158,6 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-theme-textSecondary mb-2">
-              Store / Source
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {project.supportedStores.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  disabled={isStoreGame}
-                  onClick={() => setStore(s)}
-                  className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                    store === s
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-theme-card text-theme-textSecondary hover:bg-theme-border'
-                  } ${isStoreGame ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {project.supportedStoreNames[s]}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {isStoreGame && (
             <p className="text-xs text-theme-textSecondary italic">
               Only cover image can be changed for {game.store} games.
@@ -199,10 +174,10 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
             </button>
             <button
               type="submit"
-              disabled={isLoading || !name || !executablePath}
+              disabled={isLoading}
               className="flex-1 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 text-white rounded-lg transition-colors"
             >
-              {isLoading ? 'Saving...' : 'Save'}
+              {labels.addGame.save}
             </button>
           </div>
         </form>

@@ -182,15 +182,15 @@ export default function SteamGridDBModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 modal-overlay flex items-center justify-center z-50">
-      <div className="bg-[#1a1a1a] border border-[#333] rounded-2xl w-full max-w-3xl mx-4 overflow-hidden fade-in max-h-[80vh]">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#333]">
-          <h2 className="text-lg font-semibold text-white">
+    <div className="fixed inset-0 bg-theme-bg/70 modal-overlay flex items-center justify-center z-50">
+      <div className="bg-theme-surface border border-theme-border rounded-2xl w-full max-w-3xl mx-4 overflow-hidden fade-in max-h-[80vh]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-theme-border">
+          <h2 className="text-lg font-semibold text-theme-text">
             Download Cover from SteamGridDB
           </h2>
           <button
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-white transition-colors"
+            className="p-1 text-theme-textSecondary hover:text-theme-text transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -207,13 +207,13 @@ export default function SteamGridDBModal({
 
           {step === 'loading' && (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#66c0f4]"></div>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500"></div>
             </div>
           )}
 
           {step === 'games' && (
             <div className="space-y-3">
-              <p className="text-gray-400 text-sm mb-4">
+              <p className="text-theme-textSecondary text-sm mb-4">
                 Found multiple games. Select the correct one:
               </p>
               {searchResults.map((game) => (
@@ -221,9 +221,9 @@ export default function SteamGridDBModal({
                   key={game.id}
                   onClick={() => handleSelectGame(game)}
                   disabled={isLoading}
-                  className="w-full text-left px-4 py-3 bg-[#242424] hover:bg-[#333] rounded-lg transition-colors flex items-center justify-between"
+                  className="w-full text-left px-4 py-3 bg-theme-card hover:bg-theme-border rounded-lg transition-colors flex items-center justify-between"
                 >
-                  <span className="text-white">{game.name}</span>
+                  <span className="text-theme-text">{game.name}</span>
                   <div className="flex items-center gap-2">
                     {game.verified && (
                       <span className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded">
@@ -231,7 +231,7 @@ export default function SteamGridDBModal({
                       </span>
                     )}
                     {game.types.includes('steam') && (
-                      <span className="text-xs px-2 py-0.5 bg-[#1b2838]/50 text-[#66c0f4] rounded">
+                      <span className="text-xs px-2 py-0.5 bg-theme-card text-primary-500 rounded">
                         Steam
                       </span>
                     )}
@@ -244,13 +244,13 @@ export default function SteamGridDBModal({
           {step === 'covers' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-white">
+                <p className="text-theme-text">
                   {selectedGame ? selectedGame.name : 'Select a cover:'}
                 </p>
                 {searchResults.length > 1 && (
                   <button
                     onClick={handleBackToGames}
-                    className="text-sm text-[#66c0f4] hover:text-[#4da6df]"
+                    className="text-sm text-primary-500 hover:text-primary-400"
                   >
                     Choose different game
                   </button>
@@ -267,13 +267,13 @@ export default function SteamGridDBModal({
                       key={grid.id}
                       onClick={() => handleDownload(grid)}
                       disabled={isLoading}
-                      className="relative group rounded-lg overflow-hidden border-2 border-transparent hover:border-[#66c0f4] transition-all disabled:opacity-50"
+                      className="relative group rounded-lg overflow-hidden border-2 border-transparent hover:border-primary-500 transition-all disabled:opacity-50"
                       style={{ aspectRatio: `${aspectRatio}` }}
                     >
                       <img
                         src={grid.thumb}
                         alt={`Cover ${grid.id}`}
-                        className="w-full h-full object-contain bg-[#1b2838]"
+                        className="w-full h-full object-contain bg-theme-card"
                         loading="lazy"
                         decoding="async"
                         onError={(e) => {
@@ -290,7 +290,7 @@ export default function SteamGridDBModal({
               </div>
 
               {grids.length === 0 && (
-                <p className="text-center text-gray-500 py-8">
+                <p className="text-center text-theme-textSecondary py-8">
                   No covers available for this game
                 </p>
               )}
@@ -301,7 +301,7 @@ export default function SteamGridDBModal({
             <div className="text-center py-8">
               <button
                 onClick={() => performSearch(gameName)}
-                className="px-4 py-2 bg-[#1b2838] hover:bg-[#2a3f54] text-[#66c0f4] rounded-lg transition-colors"
+                className="px-4 py-2 bg-theme-card hover:bg-theme-border text-primary-500 rounded-lg transition-colors"
               >
                 Try Again
               </button>
@@ -310,7 +310,7 @@ export default function SteamGridDBModal({
 
           {isLoading && step !== 'loading' && (
             <div className="flex items-center justify-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#66c0f4]"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
             </div>
           )}
         </div>
