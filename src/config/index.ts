@@ -1,6 +1,6 @@
 export { project } from './project'
 export type { StoreType } from './project'
-export { theme, labels, themes, getThemeColors, themesList } from './theme'
+export { theme, themes, getThemeColors, themesList } from './theme'
 export type { ThemeMode, ThemeDefinition } from './theme'
 export { ThemeProvider, useTheme } from './ThemeContext'
 export type { ThemeColors } from './ThemeContext'

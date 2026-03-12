@@ -1,6 +1,7 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { ViewType } from '../types'
-import { project, labels, ThemeMode, themes } from '../config'
+import { project, ThemeMode, themes } from '../config'
 import { sidebarIcons } from '../config/sidebarIcons'
 
 interface SidebarProps {
@@ -16,22 +17,23 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ currentView, onViewChange, gameCounts, theme, storesFound, onLaunchStore }: SidebarProps) {
+  const { t } = useTranslation()
   const themeColors = themes[theme]
   
   const baseMenuItems: { id: ViewType; label: string; icon: React.ReactNode }[] = [
     {
       id: 'all',
-      label: labels.sidebar.allGames,
+      label: t('sidebar.allGames'),
       icon: sidebarIcons.all
     },
     {
       id: 'favorites',
-      label: labels.sidebar.favorites,
+      label: t('sidebar.favorites'),
       icon: sidebarIcons.favorites
     },
     {
       id: 'recent',
-      label: labels.sidebar.recentlyPlayed,
+      label: t('sidebar.recentlyPlayed'),
       icon: sidebarIcons.recent
     }
   ]
@@ -136,7 +138,7 @@ export default function Sidebar({ currentView, onViewChange, gameCounts, theme, 
 
       <div className="p-4 border-t" style={{ borderColor: themeColors.border }}>
         <p className="text-xs text-center" style={{ color: themeColors.textSecondary }}>
-          {project.name} {labels.app.version}{project.version}
+          {project.name} {t('app.version')}{project.version}
         </p>
       </div>
     </aside>

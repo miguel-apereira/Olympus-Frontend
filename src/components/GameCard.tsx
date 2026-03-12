@@ -1,6 +1,7 @@
 import { useState, cloneElement, ReactElement } from 'react'
+import { useTranslation } from 'react-i18next'
 import { GameInfo } from '../types'
-import { labels, ThemeColors } from '../config'
+import { ThemeColors } from '../config'
 import { sidebarIcons } from '../config/sidebarIcons'
 
 interface GameCardProps {
@@ -22,6 +23,7 @@ const storeLogos: Record<string, ReactElement> = {
 }
 
 export default function GameCard({ game, viewMode, onLaunch, onRemove, onHide, onUnhide, onToggleFavorite, onEdit, themeColors }: GameCardProps) {
+  const { t } = useTranslation()
   const [showMenu, setShowMenu] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 
@@ -30,17 +32,17 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onHide, o
   }
 
   const formatLastPlayed = (dateStr?: string) => {
-    if (!dateStr) return labels.gameCard.neverPlayed
+    if (!dateStr) return t('gameCard.neverPlayed')
     const date = new Date(dateStr)
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
     
-    if (diffDays === 0) return labels.gameCard.playedToday
-    if (diffDays === 1) return labels.gameCard.playedYesterday
-    if (diffDays < 7) return `Played ${diffDays} days ago`
-    if (diffDays < 30) return `Played ${Math.floor(diffDays / 7)} weeks ago`
-    return `Played ${Math.floor(diffDays / 30)} months ago`
+    if (diffDays === 0) return t('gameCard.playedToday')
+    if (diffDays === 1) return t('gameCard.playedYesterday')
+    if (diffDays < 7) return t('gameCard.playedDaysAgo', { days: diffDays })
+    if (diffDays < 30) return t('gameCard.playedWeeksAgo', { weeks: Math.floor(diffDays / 7) })
+    return t('gameCard.playedMonthsAgo', { months: Math.floor(diffDays / 30) })
   }
 
   if (viewMode === 'list') {
@@ -102,7 +104,7 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onHide, o
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                    Edit
+                    {t('gameCard.context_menu_edit')}
                   </button>
                   <button
                     onClick={() => { game.isHidden ? onUnhide(game.id) : onHide(game.id); setShowMenu(false) }}
@@ -113,7 +115,7 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onHide, o
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
-                    {game.isHidden ? 'Unhide' : 'Hide'}
+                    {game.isHidden ? 'Unhide' : t('gameCard.context_menu_hide')}
                   </button>
                   <button
                     onClick={() => { onRemove(game.id); setShowMenu(false) }}
@@ -122,7 +124,7 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onHide, o
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                    {labels.gameCard.remove}
+                    {t('gameCard.context_menu_remove')}
                   </button>
                 </div>
               )}
@@ -167,7 +169,7 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onHide, o
                 <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2"/>
                 <path d="M10 8l6 4-6 4V8z" fill="currentColor"/>
               </svg>
-              Play
+              {t('gameCard.play')}
             </button>
           </div>
         </div>
@@ -216,7 +218,7 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onHide, o
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                    Edit
+                    {t('gameCard.context_menu_edit')}
                   </button>
                   <button
                     onClick={() => { game.isHidden ? onUnhide(game.id) : onHide(game.id); setShowMenu(false) }}
@@ -227,7 +229,7 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onHide, o
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
-                    {game.isHidden ? 'Unhide' : 'Hide'}
+                    {game.isHidden ? 'Unhide' : t('gameCard.context_menu_hide')}
                   </button>
                   <button
                     onClick={() => { onRemove(game.id); setShowMenu(false) }}
@@ -236,7 +238,7 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onHide, o
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                    {labels.gameCard.remove}
+                    {t('gameCard.context_menu_remove')}
                   </button>
               </div>
             )}

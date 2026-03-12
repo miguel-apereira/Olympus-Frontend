@@ -1,0 +1,167 @@
+{
+
+  "app": {
+    "loading": "Loading...",
+    "version": "v",
+    "description": "Let your games reside in Mount Olympus and launch them from there."
+  },
+
+  "sidebar": {
+    "allGames": "All Games",
+    "favorites": "Favorites",
+    "recentlyPlayed": "Recently Played",
+    "settings": "Settings",
+    "yourGames": "Your PC Games"
+  },
+
+  "gameGrid": {
+    "noGamesFound": "No Games Found",
+    "noGamesDescription": "Start by scanning for installed games or manually add a game to your library.",
+    "scanForGames": "Scan for Games",
+    "scanning": "Scanning...",
+    "gridView": "Grid View",
+    "listView": "List View",
+    "scanningForGames": "Scanning for games..."
+  },
+
+  "gameCard": {
+    "play": "Play",
+    "favorite": "Favorite",
+    "addToFavorites": "Add to Favorites",
+    "removeFromFavorites": "Remove from Favorites",
+    "neverPlayed": "Never played",
+    "playedToday": "Played today",
+    "playedYesterday": "Played yesterday",
+    "playedDaysAgo": "Played {{days}} days ago",
+    "playedWeeksAgo": "Played {{weeks}} weeks ago",
+    "playedMonthsAgo": "Played {{months}} months ago",
+    "context_menu_edit": "Edit",
+    "context_menu_hide": "Hide",
+    "context_menu_remove": "Remove"
+  },
+
+  "addGame": {
+    "title": "Add Game",
+    "gameName": "Game Name",
+    "gameNamePlaceholder": "Enter game name",
+    "executablePath": "Executable Path",
+    "executablePathPlaceholder": "C:\\Games\\game.exe",
+    "coverImage": "Cover Image (optional)",
+    "coverImagePlaceholder": "C:\\Images\\cover.jpg",
+    "storeSource": "Store / Source",
+    "browse": "Browse",
+    "cancel": "Cancel",
+    "addGame": "Add Game",
+    "adding": "Adding...",
+    "save": "Save"
+  },
+
+  "editGame": {
+    "title": "Edit Game",
+    "gameName": "Game Name",
+    "executablePath": "Executable Path",
+    "coverImage": "Cover Image",
+    "onlyCoverEditable": "Only cover image can be changed for {{store}} games.",
+    "browse": "Browse",
+    "steamGridDB": "SteamGridDB"
+  },
+
+  "settings": {
+    "title": "Settings",
+    "tabs": {
+      "application": {
+        "tabLabel": "Application",
+        "application": "Application",
+        "library": "Library",
+        "scanOnStartup": "Scan on startup",
+        "scanOnStartupDescription": "Automatically scan for new games when the app launches",
+        "manualScan": "Manual Scan",
+        "manualScanDescription": "Scan your computer for installed games from Steam and Epic Games.",
+        "hardwareAcceleration": "Hardware Acceleration",
+        "hardwareAccelerationDescription": "Use GPU for smoother rendering. Disable if you experience display issues.",
+        "appearance": "Appearance",
+        "theme": "Theme",
+        "themeDescription": "Choose your preferred color theme",
+        "darkMode": "Dark",
+        "lightMode": "Light"
+      },
+      "hidden_games": {
+        "tabLabel": "Hidden Games",
+        "hidden_games": "Hidden Games",
+        "noHiddenGames": "You have not hidden any games yet.",
+        "unhide": "Unhide"
+      },
+      "integrations": {
+        "tabLabel": "Integrations",
+        "steamGridDB": "SteamGridDB",
+        "steamGridDBSubtitle": "API Key",
+        "steamGridDBDescription": "Download game covers from SteamGridDB using your API key. You can get a free key at",
+        "apiKey": "API",
+        "apiKeyPlaceholder": "Enter your SteamGridDB API key",
+        "getApiKey": "Get free API key",
+        "apiKeyFrom": "steamgriddb.com/profile/preferences/api",
+        "testConnection": "Test Connection",
+        "testing": "Testing...",
+        "apiKeyValid": "Your API key is valid!",
+        "apiKeyInvalid": "The API key you entered is invalid. Please double-check and try again.",
+        "apiKeyConfigured": "Your API Key is valid and configured!",
+        "removeApiKey": "Remove API Key"
+      },
+      "about": {
+        "tabLabel": "About",
+        "about": "About",
+        "version": "Version",
+        "aboutText1": "This app is in early development. Expect bugs and missing features.",
+        "aboutText2": "You can always send us your feedback!",
+        "withLove": "From Portugal with ❤️",
+        "update": "Check for Updates",
+        "checkingUpdates": "Checking for updates...",
+        "updateAvailable": "Update {{version}} is available!",
+        "updateAvailableButton": "Download & Install",
+        "downloadingUpdate": "Downloading update... {{percent}}%",
+        "updateReadyToInstall": "Update {{version}} is ready to install.",
+        "updateReadyToInstallButton": "Restart & Install",
+        "latestVersion": "You're running the latest version!",
+        "updateTryAgain": "Try Again",
+        "checkUpdatesButton": "Check for Updates"
+      }
+    },
+    
+    "about": "About",
+    "version": "Version",
+    "restartToApply": "Restart required for changes to take effect!",
+    "restartNow": "Restart Now"
+  },
+
+  "search": {
+    "placeholder": "Search games..."
+  },
+
+  "header": {
+    "games": "games",
+    "game": "game"
+  },
+
+  "steamGridDB": {
+    "title": "Download Cover from SteamGridDB",
+    "searching": "Searching...",
+    "foundMultiple": "Found multiple games. Select the correct one:",
+    "chooseDifferent": "Choose different game",
+    "selectCover": "Select a cover:",
+    "noCovers": "No covers available for this game",
+    "tryAgain": "Try Again",
+    "downloading": "Downloading...",
+    "download": "Download",
+    "cancel": "Cancel",
+    "verified_game": "Verified",
+    "steam_game": "Steam"
+  },
+
+  "scanProgress": {
+    "scanningGames": "Scanning for Games",
+    "scanningSteamGames": "Scanning for Steam games...",
+    "scanningEpicGames": "Scanning for Epic games...",
+    "scanComplete": "Scan complete!",
+    "preparingToScan": "Preparing to scan..."
+  }
+}

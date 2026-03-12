@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface ScanProgressModalProps {
   isOpen: boolean
@@ -12,6 +13,7 @@ interface ScanProgressModalProps {
 
 export default function ScanProgressModal({ isOpen, progress }: ScanProgressModalProps) {
   const [dots, setDots] = useState('')
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (!isOpen) return
@@ -48,15 +50,15 @@ export default function ScanProgressModal({ isOpen, progress }: ScanProgressModa
           </div>
 
           <h2 className="text-xl font-semibold text-white mb-2">
-            Scanning for Games{dots}
+            {t('scanProgress.scanningGames')}{dots}
           </h2>
 
           {progress ? (
             <div className="space-y-3">
               <p className="text-gray-400 text-sm">
-                {progress.store === 'steam' && 'Scanning Steam games...'}
-                {progress.store === 'epic' && 'Scanning Epic Games...'}
-                {progress.store === 'complete' && 'Scan complete!'}
+                {progress.store === 'steam' && t('scanProgress.scanningSteamGames')}
+                {progress.store === 'epic' && t('scanProgress.scanningEpicGames')}
+                {progress.store === 'complete' && t('scanProgress.scanComplete')}
               </p>
               
               {progress.currentGame && (
@@ -81,7 +83,7 @@ export default function ScanProgressModal({ isOpen, progress }: ScanProgressModa
             </div>
           ) : (
             <p className="text-gray-400 text-sm">
-              Preparing to scan...
+              {t('scanProgress.preparingToScan')}
             </p>
           )}
         </div>

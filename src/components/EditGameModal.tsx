@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { GameInfo } from '../types'
-import { project, labels, ThemeMode } from '../config'
+import { ThemeMode } from '../config'
 import SteamGridDBModal from './SteamGridDBModal'
 
 interface EditGameModalProps {
@@ -11,6 +12,7 @@ interface EditGameModalProps {
 }
 
 export default function EditGameModal({ game, theme, onClose, onSave }: EditGameModalProps) {
+  const { t } = useTranslation()
   const [name, setName] = useState(game.name)
   const [executablePath, setExecutablePath] = useState(game.executablePath)
   const [coverImage, setCoverImage] = useState(game.coverImage || '')
@@ -81,7 +83,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-theme-textSecondary mb-2">
-              Game Name *
+              {t('editGame.gameName')}
             </label>
             <input
               type="text"
@@ -95,7 +97,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
 
           <div>
             <label className="block text-sm font-medium text-theme-textSecondary mb-2">
-              Executable Path *
+              {t('editGame.executablePath')}
             </label>
             <div className="flex gap-2">
               <input
@@ -112,7 +114,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
                   onClick={handleSelectExecutable}
                   className="px-4 py-2 bg-theme-card border border-theme-border rounded-lg text-theme-text hover:bg-theme-border transition-colors"
                 >
-                  {labels.addGame.browse}
+                  {t('editGame.browse')}
                 </button>
               )}
             </div>
@@ -120,7 +122,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
 
           <div>
             <label className="block text-sm font-medium text-theme-textSecondary mb-2">
-              Cover Image
+              {t('editGame.coverImage')}
             </label>
             <div className="flex gap-2">
               <input
@@ -134,7 +136,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
                 onClick={handleSelectImage}
                 className="px-4 py-2 bg-theme-card border border-theme-border rounded-lg text-theme-text hover:bg-theme-border transition-colors"
               >
-                {labels.addGame.browse}
+                {t('addGame.browse')}
               </button>
               <button
                 type="button"
@@ -142,7 +144,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
                 className="px-4 py-2 bg-theme-card border border-theme-border rounded-lg text-primary-500 hover:bg-theme-border transition-colors"
                 title="Download from SteamGridDB"
               >
-                SteamGridDB
+                {t('editGame.steamGridDB')}
               </button>
             </div>
           </div>
@@ -160,7 +162,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
 
           {isStoreGame && (
             <p className="text-xs text-theme-textSecondary italic">
-              Only cover image can be changed for {game.store} games.
+              {t('editGame.onlyCoverEditable', { store: game.store })}
             </p>
           )}
 
@@ -170,14 +172,14 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
               onClick={onClose}
               className="flex-1 py-2 bg-theme-card border border-theme-border rounded-lg text-theme-text hover:bg-theme-border transition-colors"
             >
-              {labels.addGame.cancel}
+              {t('addGame.cancel')}
             </button>
             <button
               type="submit"
               disabled={isLoading}
               className="flex-1 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 text-white rounded-lg transition-colors"
             >
-              {labels.addGame.save}
+              {t('addGame.save')}
             </button>
           </div>
         </form>

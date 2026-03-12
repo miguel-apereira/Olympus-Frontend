@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import Sidebar from './components/Sidebar'
 import GameGrid from './components/GameGrid'
 import AddGameModal from './components/AddGameModal'
@@ -8,7 +9,7 @@ import ScanProgressModal from './components/ScanProgressModal'
 import EditGameModal from './components/EditGameModal'
 import ChangelogModal from './components/ChangelogModal'
 import { GameInfo, ViewType, Settings } from './types'
-import { project, labels, themes } from './config'
+import { project, themes } from './config'
 
 window.onerror = (message, source, lineno, colno, error) => {
   console.error('Global error:', message, source, lineno, colno, error)
@@ -19,6 +20,7 @@ window.onunhandledrejection = (event) => {
 }
 
 function App() {
+  const { t } = useTranslation()
   const [games, setGames] = useState<GameInfo[]>([])
   const [currentView, setCurrentView] = useState<ViewType>('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -303,7 +305,7 @@ function App() {
       >
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p style={{ color: themeColors.textSecondary }}>{labels.app.loading}</p>
+          <p style={{ color: themeColors.textSecondary }}>{t('app.loading')}</p>
         </div>
       </div>
     )
@@ -426,15 +428,15 @@ function App() {
               >
                 <div>
                   <h1 className="text-2xl font-semibold" style={{ color: themeColors.text }}>
-                    {currentView === 'all' && labels.sidebar.allGames}
-                    {currentView === 'favorites' && labels.sidebar.favorites}
-                    {currentView === 'recent' && labels.sidebar.recentlyPlayed}
+                    {currentView === 'all' && t('sidebar.allGames')}
+                    {currentView === 'favorites' && t('sidebar.favorites')}
+                    {currentView === 'recent' && t('sidebar.recentlyPlayed')}
                     {currentView === 'steam' && project.supportedStoreNames.steam + ' Library'}
                     {currentView === 'epic' && project.supportedStoreNames.epic + ' Library'}
                     {currentView === 'custom' && project.supportedStoreNames.custom + ' Games'}
                   </h1>
                   <p className="text-sm mt-1" style={{ color: themeColors.textSecondary }}>
-                    {filteredGames.length} {filteredGames.length === 1 ? labels.header.game : labels.header.games}
+                    {filteredGames.length} {filteredGames.length === 1 ? t('header.game') : t('header.games')}
                   </p>
                 </div>
                 
@@ -442,7 +444,7 @@ function App() {
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder={labels.search.placeholder}
+                      placeholder={t('search.placeholder')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-64 px-4 py-2 pl-10 rounded-lg focus:outline-none"
@@ -470,7 +472,7 @@ function App() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
-                    {labels.addGame.title}
+                    {t('addGame.title')}
                   </button>
                 </div>
               </header>

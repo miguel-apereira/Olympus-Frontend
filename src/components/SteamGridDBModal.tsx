@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ThemeMode } from '../config'
 
 interface SteamGridDBGame {
@@ -35,6 +36,7 @@ export default function SteamGridDBModal({
   onClose,
   onCoverSelected
 }: SteamGridDBModalProps) {
+  const { t } = useTranslation()
   const [step, setStep] = useState<ModalStep>('loading')
   const [searchResults, setSearchResults] = useState<SteamGridDBGame[]>([])
   const [selectedGame, setSelectedGame] = useState<SteamGridDBGame | null>(null)
@@ -186,7 +188,7 @@ export default function SteamGridDBModal({
       <div className="bg-theme-surface border border-theme-border rounded-2xl w-full max-w-3xl mx-4 overflow-hidden fade-in max-h-[80vh]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-theme-border">
           <h2 className="text-lg font-semibold text-theme-text">
-            Download Cover from SteamGridDB
+            {t('steamGridDB.title')}
           </h2>
           <button
             onClick={onClose}
@@ -214,7 +216,7 @@ export default function SteamGridDBModal({
           {step === 'games' && (
             <div className="space-y-3">
               <p className="text-theme-textSecondary text-sm mb-4">
-                Found multiple games. Select the correct one:
+                {t('steamGridDB.foundMultiple')}
               </p>
               {searchResults.map((game) => (
                 <button
@@ -227,12 +229,12 @@ export default function SteamGridDBModal({
                   <div className="flex items-center gap-2">
                     {game.verified && (
                       <span className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded">
-                        Verified
+                        {t('steamGridDB.verified_game')}
                       </span>
                     )}
                     {game.types.includes('steam') && (
                       <span className="text-xs px-2 py-0.5 bg-theme-card text-primary-500 rounded">
-                        Steam
+                        {t('steamGridDB.steam_game')}
                       </span>
                     )}
                   </div>
@@ -245,14 +247,14 @@ export default function SteamGridDBModal({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-theme-text">
-                  {selectedGame ? selectedGame.name : 'Select a cover:'}
+                  {selectedGame ? selectedGame.name : t('steamGridDB.selectCover')}
                 </p>
                 {searchResults.length > 1 && (
                   <button
                     onClick={handleBackToGames}
                     className="text-sm text-primary-500 hover:text-primary-400"
                   >
-                    Choose different game
+                    {t('steamGridDB.chooseDifferent')}
                   </button>
                 )}
               </div>
@@ -291,7 +293,7 @@ export default function SteamGridDBModal({
 
               {grids.length === 0 && (
                 <p className="text-center text-theme-textSecondary py-8">
-                  No covers available for this game
+                  {t('steamGridDB.noCovers')}
                 </p>
               )}
             </div>
@@ -303,7 +305,7 @@ export default function SteamGridDBModal({
                 onClick={() => performSearch(gameName)}
                 className="px-4 py-2 bg-theme-card hover:bg-theme-border text-primary-500 rounded-lg transition-colors"
               >
-                Try Again
+                {t('steamGridDB.tryAgain')}
               </button>
             </div>
           )}
