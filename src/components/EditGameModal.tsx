@@ -18,6 +18,8 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
   const [isLoading, setIsLoading] = useState(false)
   const [showSteamGridDB, setShowSteamGridDB] = useState(false)
 
+  const isStoreGame = game.store === 'steam' || game.store === 'epic'
+
   const handleCoverSelected = (coverPath: string) => {
     setCoverImage(coverPath)
   }
@@ -44,13 +46,20 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
 
     setIsLoading(true)
     try {
-      onSave({
-        ...game,
-        name,
-        executablePath,
-        coverImage: coverImage || undefined,
-        store
-      })
+      if (isStoreGame) {
+        onSave({
+          ...game,
+          coverImage: coverImage || undefined
+        })
+      } else {
+        onSave({
+          ...game,
+          name,
+          executablePath,
+          coverImage: coverImage || undefined,
+          store
+        })
+      }
     } finally {
       setIsLoading(false)
     }
@@ -80,7 +89,8 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 bg-theme-bg border border-theme-border rounded-lg text-theme-text"
+              disabled={isStoreGame}
+              className={`w-full px-4 py-2 bg-theme-bg border border-theme-border rounded-lg text-theme-text ${isStoreGame ? 'opacity-50 cursor-not-allowed' : ''}`}
               required
             />
           </div>
@@ -94,16 +104,19 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
                 type="text"
                 value={executablePath}
                 onChange={(e) => setExecutablePath(e.target.value)}
-                className="flex-1 px-4 py-2 bg-theme-bg border border-theme-border rounded-lg text-theme-text"
+                disabled={isStoreGame}
+                className={`flex-1 px-4 py-2 bg-theme-bg border border-theme-border rounded-lg text-theme-text ${isStoreGame ? 'opacity-50 cursor-not-allowed' : ''}`}
                 required
               />
-              <button
-                type="button"
-                onClick={handleSelectExecutable}
-                className="px-4 py-2 bg-theme-card border border-theme-border rounded-lg text-theme-text hover:bg-theme-border transition-colors"
-              >
-                {labels.addGame.browse}
-              </button>
+              {!isStoreGame && (
+                <button
+                  type="button"
+                  onClick={handleSelectExecutable}
+                  className="px-4 py-2 bg-theme-card border border-theme-border rounded-lg text-theme-text hover:bg-theme-border transition-colors"
+                >
+                  {labels.addGame.browse}
+                </button>
+              )}
             </div>
           </div>
 
@@ -156,18 +169,25 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
                 <button
                   key={s}
                   type="button"
+                  disabled={isStoreGame}
                   onClick={() => setStore(s)}
                   className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                     store === s
                       ? 'bg-primary-600 text-white'
                       : 'bg-theme-card text-theme-textSecondary hover:bg-theme-border'
-                  }`}
+                  } ${isStoreGame ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {project.supportedStoreNames[s]}
                 </button>
               ))}
             </div>
           </div>
+
+          {isStoreGame && (
+            <p className="text-xs text-theme-textSecondary italic">
+              Only cover image can be changed for {game.store} games.
+            </p>
+          )}
 
           <div className="flex gap-3 pt-4">
             <button
