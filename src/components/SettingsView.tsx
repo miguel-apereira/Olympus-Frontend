@@ -459,8 +459,7 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
                   <img src={logoBigUrl} alt="Logo" className="h-40 w-auto object-contain" draggable="false" />
                 </div>
                 <p>{t('app.description')}<br></br><br></br>
-                  <span>{t('settings.tabs.about.aboutText1')}</span><br></br>
-                  <span>{t('settings.tabs.about.aboutText2')}</span>
+                  <span>{t('settings.tabs.about.aboutText')}</span><br></br>
                 </p>
                 <div className="flex justify-end pt-1">
                   <span style={{fontSize: "14px"}}>{t('settings.tabs.about.withLove')}</span>

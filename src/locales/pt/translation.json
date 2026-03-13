@@ -25,7 +25,8 @@
     "favorites": "Favoritos",
     "recentlyPlayed": "Jogado Recentemente",
     "settings": "Definições",
-    "yourGames": "Os Teus Jogos"
+    "yourGames": "Os Teus Jogos",
+    "customGamesTab": "Jogos Adicionados"
   },
 
   "gameGrid": {
@@ -56,134 +57,143 @@
   },
 
   "addGame": {
-    "title": "Add Game",
-    "gameName": "Game Name",
-    "gameNamePlaceholder": "Enter game name",
-    "executablePath": "Executable Path",
+    "title": "Adicionar Jogo",
+    "gameName": "Nome do Jogo",
+    "gameNamePlaceholder": "Nme do jogo",
+    "executablePath": "Caminho do Executável (.exe)",
     "executablePathPlaceholder": "C:\\Games\\game.exe",
-    "coverImage": "Cover Image (optional)",
+    "coverImage": "Imagem de Capa (opcional mas recomendado)",
     "coverImagePlaceholder": "C:\\Images\\cover.jpg",
-    "storeSource": "Store / Source",
-    "browse": "Browse",
-    "cancel": "Cancel",
-    "addGame": "Add Game",
-    "adding": "Adding...",
-    "save": "Save"
+    "storeSource": "Loja / Fonte",
+    "browse": "Procurar",
+    "cancel": "Cancelar",
+    "addGame": "Adicionar Jogo",
+    "adding": "A adicionar...",
+    "save": "Guardar"
   },
 
   "editGame": {
-    "title": "Edit Game",
-    "gameName": "Game Name",
-    "executablePath": "Executable Path",
-    "coverImage": "Cover Image",
-    "onlyCoverEditable": "Only cover image can be changed for {{store}} games.",
-    "browse": "Browse",
+    "title": "Editar Jogo",
+    "gameName": "Nome do Jogo",
+    "executablePath": "Caminho do Executável (.exe)",
+    "coverImage": "Imagem de Capa",
+    "onlyCoverEditable": "Apenas a capa do jogo pode ser alterada para jogos da {{store}}.",
+    "browse": "Procurar",
     "steamGridDB": "SteamGridDB",
-    "steamGridDBTooltip": "Download cover from SteamGridDB"
+    "steamGridDBTooltip": "Fazer download de uma capa através do SteamGridDB"
   },
 
   "settings": {
-    "title": "Settings",
+    "title": "Definições",
 
     "tabs": {
       "application": {
-        "tabLabel": "Application",
-        "application": "Application",
-        "library": "Library",
-        "scanOnStartup": "Scan on startup",
-        "scanOnStartupDescription": "Automatically scan for new games when the app launches",
-        "manualScan": "Manual Scan",
-        "manualScanDescription": "Scan your computer for installed games from Steam and Epic Games.",
-        "hardwareAcceleration": "Hardware Acceleration",
-        "hardwareAccelerationDescription": "Use GPU for smoother rendering. Disable if you experience display issues.",
-        "appearance": "Appearance",
-        "theme": "Theme",
-        "themeDescription": "Choose your preferred color theme",
-        "darkMode": "Dark",
-        "lightMode": "Light"
+        "tabLabel": "Aplicação",
+        "application": "Aplicação",
+        "library": "Biblioteca",
+        "scanOnStartup": "Procurar jogos no arranque",
+        "scanOnStartupDescription": "Se ativado, o Olympus irá procurar por jogos instalados no teu computador cada vez que o iniciares.",
+        "manualScan": "Procura Manual",
+        "manualScanDescription": "Procura por jogos instalados no teu computador através da Steam e Epic Games. Jogos instalados manualmente, devem ser adicionados ao Olympus manualmente.",
+        "hardwareAcceleration": "Aceleração de Hardware",
+        "hardwareAccelerationDescription": "Ativa ou desativa a aceleração de hardware. Desativar pode ajudar a resolver problemas gráficos, mas pode causar um desempenho geral mais lento.",
+        "appearance": "Aparência",
+        "theme": "Tema",
+        "themeDescription": "Escolhe o tema que preferires para a aplicação.",
+        "darkMode": "Escuro",
+        "lightMode": "Claro",
+        "language": "Língua",
+        "languageDescription": "Escolhe a língua que preferires para a aplicação.",
+        "languageDropdown": {
+          "en": "Inglês",
+          "pt": "Português (Portugal)"
+        }
       },
 
       "hidden_games": {
-        "tabLabel": "Hidden Games",
-        "hidden_games": "Hidden Games",
-        "noHiddenGames": "You have not hidden any games yet.",
-        "unhide": "Unhide"
+        "tabLabel": "Jogos Ocultos",
+        "hidden_games": "Jogos Ocultos",
+        "noHiddenGames": "De momento não tens jogos ocultos.",
+        "unhide": "Mostrar"
       },
 
       "integrations": {
-        "tabLabel": "Integrations",
+        "tabLabel": "Integrações",
         "steamGridDB": "SteamGridDB",
-        "steamGridDBSubtitle": "API Key",
-        "steamGridDBDescription": "Download game covers from SteamGridDB using your API key. You can get a free key at",
+        "steamGridDBSubtitle": "Chave de API",
+        "steamGridDBDescription": "Configura a tua chave de API do SteamGridDB para poderes fazer download de capas para os teus jogos diretamente através do Olympus. Podes obter a tua chave gratuitamente em ",
         "apiKey": "API",
-        "apiKeyPlaceholder": "Enter your SteamGridDB API key",
-        "getApiKey": "Get free API key",
+        "apiKeyPlaceholder": "Insere aqui a tua Chave de API do SteamGridDB",
+        "getApiKey": "Obter uma Chave de API gratuita.",
         "apiKeyFrom": "steamgriddb.com/profile/preferences/api",
-        "testConnection": "Test Connection",
-        "testing": "Testing...",
-        "apiKeyValid": "Your API key is valid!",
-        "apiKeyInvalid": "The API key you entered is invalid. Please double-check and try again.",
-        "apiKeyConfigured": "Your API Key is valid and configured!",
-        "removeApiKey": "Remove API Key"
+        "testConnection": "Testar Ligação",
+        "testing": "A testar...",
+        "apiKeyValid": "A tua Chave de API está válida!",
+        "apiKeyInvalid": "A Chave de API que inseriste é inválida. Por favor, verifica e tenta novamente.",
+        "apiKeyConfigured": "A tua Chave de API está válida e configurada!",
+        "removeApiKey": "Remover Chave de API"
       },
 
       "about": {
-        "tabLabel": "About",
-        "about": "About",
-        "version": "Version",
-        "aboutText1": "This app is in early development. Expect bugs and missing features.",
-        "aboutText2": "You can always send us your feedback!",
-        "withLove": "From Portugal with ❤️",
-        "update": "Check for Updates",
-        "checkUpdatesButton": "Check for Updates",
-        "error": "Error"
+        "tabLabel": "Sobre",
+        "about": "Sobre",
+        "version": "Versão",
+        "aboutText": "O Olympus é um launcher de jogos leve e personalizável para PC, projetado para organizar e correr todos os teus jogos a partir de um único local. Ele suporta jogos da Steam, Epic Games e jogos adicionados manualmente, oferecendo uma experiência de utilizador fluida e agradável.",
+        "withLove": "Feito em Portugal com ❤️",
+        "update": "Atualizar Aplicação",
+        "checkUpdatesButton": "Verificar Atualizações",
+        "error": "Erro"
       }
     },
     
-    "restartToApply": "Restart required for changes to take effect!",
-    "restartNow": "Restart Now"
+    "restartToApply": "Reinício necessário para aplicar alterações!",
+    "restartNow": "Reiniciar Agora"
   },
 
   "steamGridDB": {
-    "title": "Download Cover from SteamGridDB",
-    "searching": "Searching...",
-    "foundMultiple": "Found multiple games. Select the correct one:",
-    "chooseDifferent": "Choose different game",
-    "selectCover": "Select a cover:",
-    "noCovers": "No covers available for this game",
-    "tryAgain": "Try Again",
-    "downloading": "Downloading...",
-    "download": "Download",
-    "cancel": "Cancel",
-    "verified_game": "Verified",
+    "title": "Fazer download de capa através do SteamGridDB",
+    "searching": "A procurar...",
+    "foundMultiple": "Foram encontrados vários jogos com o nome semelhante. Escolhe o jogo correcto:",
+    "chooseDifferent": "Escolher um jogo diferente",
+    "selectCover": "Seleciona uma capa:",
+    "noCovers": "Não foram encontradas capas para este jogo.",
+    "failedToLoadCovers": "Houve um problema ao carregar capas para este jogo.",
+    "gameNotFound": "O jogo que procuraste não foi encontrado.",
+    "failedToSearchGames": "Houve um problema ao procurar por jogos.",
+    "failedToDownloadCover": "Houve um problema ao descarregar a capa para este jogo.",
+    "tryAgain": "Tentar novamente",
+    "downloading": "A descarregar...",
+    "download": "Descarregar",
+    "cancel": "Cancelar",
+    "verified_game": "Verificado",
     "steam_game": "Steam"
   },
 
   "scanProgress": {
-    "scanningGames": "Scanning for Games",
-    "scanningSteamGames": "Scanning for Steam games...",
-    "scanningEpicGames": "Scanning for Epic games...",
-    "scanComplete": "Scan complete!",
-    "preparingToScan": "Preparing to scan..."
+    "scanningGames": "A procurar jogos",
+    "scanningSteamGames": "A procurar por jogos da Steam...",
+    "scanningEpicGames": "A procurar por jogos da Epic...",
+    "scanComplete": "Procura concluída!",
+    "preparingToScan": "A preparar para procurar..."
   },
 
   "changelog": {
-    "title": "What's new",
-    "viewOnline": "View changelog online",
-    "version": "Version {{version}}",
-    "noChanges": "No changelog entries found."
+    "title": "Novidades",
+    "viewOnline": "Ler changelog online",
+    "version": "Versão {{version}}",
+    "noChanges": "Não foram encontradas entradas no changelog."
   },
 
   "update": {
-    "checkingUpdates": "Checking for updates...",
-    "updateAvailable": "Update {{version}} is available!",
-    "updateAvailableButton": "Download & Install",
-    "downloadingUpdate": "Downloading update... {{percent}}",
-    "updateReadyToInstall": "Update {{version}} is ready to install.",
-    "updateReadyToInstallButton": "Restart & Install",
-    "latestVersion": "You're running the latest version!",
-    "updateTryAgain": "Try Again",
-    "changelogButton": "What's new"
+    "checkingUpdates": "A procurar atualizações...",
+    "updateAvailable": "Atualização {{version}} está disponível!",
+    "updateAvailableButton": "Descarregar & Instalar",
+    "downloadingUpdate": "A descarregar atualização... {{percent}}",
+    "updateReadyToInstall": "Atualização {{version}} está pronta a instalar.",
+    "updateReadyToInstallButton": "Reiniciar & Instalar",
+    "latestVersion": "O Olympus está atualizado!",
+    "updateTryAgain": "Tentar novamente",
+    "changelogButton": "Novidades"
   }
 
 }

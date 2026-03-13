@@ -51,7 +51,7 @@ export default function Sidebar({ currentView, onViewChange, gameCounts, theme, 
     }] : []),
     {
       id: 'custom' as ViewType,
-      label: project.supportedStoreNames.custom,
+      label: t('sidebar.customGamesTab'),
       icon: sidebarIcons.custom
     }
   ]

@@ -25,7 +25,8 @@
     "favorites": "Favorites",
     "recentlyPlayed": "Recently Played",
     "settings": "Settings",
-    "yourGames": "Your PC Games"
+    "yourGames": "Your PC Games",
+    "customGamesTab": "Custom"
   },
 
   "gameGrid": {
@@ -137,8 +138,7 @@
         "tabLabel": "About",
         "about": "About",
         "version": "Version",
-        "aboutText1": "This app is in early development. Expect bugs and missing features.",
-        "aboutText2": "You can always send us your feedback!",
+        "aboutText": "Olympus is a lightweight and customizable PC game launcher designed to organize and launch all your games from a single place. It supports games from Steam, Epic Games, and manually added titles, providing a smooth and enjoyable user experience.",
         "withLove": "From Portugal with ❤️",
         "update": "Check for Updates",
         "checkUpdatesButton": "Check for Updates",
@@ -156,7 +156,11 @@
     "foundMultiple": "Found multiple games. Select the correct one:",
     "chooseDifferent": "Choose different game",
     "selectCover": "Select a cover:",
-    "noCovers": "No covers available for this game",
+    "noCovers": "No covers available for this game.",
+    "failedToLoadCovers": "Failed to load covers for this game.",
+    "gameNotFound": "The game you searched for was not found.",
+    "failedToSearchGames": "Failed to search for games.",
+    "failedToDownloadCover": "Failed to download cover image.",
     "tryAgain": "Try Again",
     "downloading": "Downloading...",
     "download": "Download",

@@ -58,7 +58,7 @@ export default function SteamGridDBModal({
       }
 
       if (result.games.length === 0) {
-        setError('No games found matching your game')
+        setError(t('steamGridDB.gameNotFound'))
         setStep('error')
         return
       }
@@ -77,7 +77,7 @@ export default function SteamGridDBModal({
         setStep('games')
       }
     } catch (err) {
-      setError('Failed to search for games')
+      setError(t('steamGridDB.failedToSearchGames'))
       setStep('error')
     } finally {
       setIsLoading(false)
@@ -100,7 +100,7 @@ export default function SteamGridDBModal({
       }
 
       if (result.grids.length === 0) {
-        setError('No covers available for this game')
+        setError(t('steamGridDB.noCovers'))
         setStep('error')
         return
       }
@@ -108,7 +108,7 @@ export default function SteamGridDBModal({
       setGrids(result.grids)
       setStep('covers')
     } catch (err) {
-      setError('Failed to load covers')
+      setError(t('steamGridDB.failedToLoadCovers'))
       setStep('error')
     } finally {
       setIsLoading(false)
@@ -171,7 +171,7 @@ export default function SteamGridDBModal({
         onClose()
       }
     } catch (err) {
-      setError('Failed to download cover')
+      setError(t('steamGridDB.failedToDownloadCover'))
     } finally {
       setIsLoading(false)
     }

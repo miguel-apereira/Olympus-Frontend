@@ -136,7 +136,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
                 onClick={handleSelectImage}
                 className="px-4 py-2 bg-theme-card border border-theme-border rounded-lg text-theme-text hover:bg-theme-border transition-colors"
               >
-                {t('addGame.browse')}
+                {t('editGame.browse')}
               </button>
               <button
                 type="button"
