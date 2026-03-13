@@ -13,7 +13,7 @@ export default function AddGameModal({ onClose, onAdd }: AddGameModalProps) {
   const [name, setName] = useState('')
   const [executablePath, setExecutablePath] = useState('')
   const [coverImage, setCoverImage] = useState('')
-  const [store, setStore] = useState<typeof project.supportedStores[number]>('custom')
+  const [store] = useState<typeof project.supportedStores[number]>('custom')
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSelectExecutable = async () => {

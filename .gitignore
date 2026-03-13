@@ -143,3 +143,5 @@ release/release/
 release/
 dist/
 dist-electron/
+AGENTS.md
+.opencode/*
