@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Settings, GameInfo } from '../types'
 import { project, themesList, ThemeMode, themes } from '../config'
 import logoBigUrl from '../assets/logo-big.png'
+import i18n from '../i18n'
 
 type SettingsTab = 'application' | 'hidden' | 'about' | 'integrations'
 
@@ -18,6 +19,14 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
   const { t } = useTranslation()
   const [localSettings, setLocalSettings] = useState<Settings>(settings)
   const [themeDropdownOpen, setThemeDropdownOpen] = useState(false)
+  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
+  
+  const currentLanguage = i18n.language || 'en'
+  
+  const languages = Object.keys(i18n.options.resources || {}).map(lang => ({
+    code: lang,
+    name: t(`settings.tabs.application.languageDropdown.${lang}`, lang)
+  }))
   const [activeTab, setActiveTab] = useState<SettingsTab>('application')
   const [hiddenGames, setHiddenGames] = useState<GameInfo[]>([])
   const [updateStatus, setUpdateStatus] = useState<{ status: string; version?: string; percent?: number; error?: string } | null>(null)
@@ -170,6 +179,57 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
             <div className="rounded-xl p-6" style={{ backgroundColor: themeColors.card, border: `1px solid ${themeColors.border}` }}>
               <h2 className="text-lg font-semibold mb-4" style={{ color: themeColors.text }}>{t('settings.tabs.application.appearance')}</h2>
               <div className="space-y-4">
+                <div>
+                  <p className="font-medium mb-1" style={{ color: themeColors.text }}>{t('settings.tabs.application.language')}</p>
+                  <p className="text-sm mb-3" style={{ color: themeColors.textSecondary }}>{t('settings.tabs.application.languageDescription')}</p>
+                  
+                  <div className="relative">
+                    <button
+                      onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+                      className="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors"
+                      style={{ 
+                        backgroundColor: themeColors.surface, 
+                        border: `1px solid ${themeColors.border}`,
+                        color: themeColors.text 
+                      }}
+                    >
+                      <span>{t(`settings.tabs.application.languageDropdown.${currentLanguage}`)}</span>
+                      <svg className={`w-5 h-5 transition-transform ${languageDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    {languageDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 rounded-lg shadow-xl z-10 overflow-hidden" style={{ backgroundColor: themeColors.surface, border: `1px solid ${themeColors.border}` }}>
+                        {languages.map((lang) => (
+                          <button
+                            key={lang.code}
+                            onClick={() => {
+                              i18n.changeLanguage(lang.code)
+                              const newSettings = { ...localSettings, language: lang.code }
+                              setLocalSettings(newSettings)
+                              onSave(newSettings)
+                              setLanguageDropdownOpen(false)
+                            }}
+                            className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors"
+                            style={{ 
+                              backgroundColor: currentLanguage === lang.code ? '#0284c7' : undefined,
+                              color: currentLanguage === lang.code ? 'white' : themeColors.text 
+                            }}
+                          >
+                            <span>{lang.name}</span>
+                            {currentLanguage === lang.code && (
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div>
                   <p className="font-medium mb-1" style={{ color: themeColors.text }}>{t('settings.tabs.application.theme')}</p>
                   <p className="text-sm mb-3" style={{ color: themeColors.textSecondary }}>{t('settings.tabs.application.themeDescription')}</p>

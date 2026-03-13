@@ -19,8 +19,14 @@ i18n
     },
     detection: {
       order: ['localStorage', 'navigator'],
-      caches: ['localStorage']
+      caches: ['localStorage'],
+      lookupLocalStorage: 'olympus-language'
     }
   })
+
+export const changeLanguage = (lang: string) => {
+  i18n.changeLanguage(lang)
+  localStorage.setItem('olympus-language', lang)
+}
 
 export default i18n

@@ -9,7 +9,8 @@ import ScanProgressModal from './components/ScanProgressModal'
 import EditGameModal from './components/EditGameModal'
 import ChangelogModal from './components/ChangelogModal'
 import { GameInfo, ViewType, Settings } from './types'
-import { project, themes } from './config'
+import { themes } from './config'
+import { changeLanguage } from './i18n'
 
 window.onerror = (message, source, lineno, colno, error) => {
   console.error('Global error:', message, source, lineno, colno, error)
@@ -94,7 +95,12 @@ function App() {
         theme: loadedSettings?.theme || 'dark',
         scanOnStartup: loadedSettings?.scanOnStartup ?? true,
         hardwareAcceleration: loadedSettings?.hardwareAcceleration ?? true,
+        language: loadedSettings?.language || 'en',
         integrations: loadedSettings?.integrations
+      }
+      
+      if (settingsWithDefaults.language) {
+        changeLanguage(settingsWithDefaults.language)
       }
       
       setGames(gamesWithFavorites)

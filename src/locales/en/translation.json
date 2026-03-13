@@ -100,7 +100,13 @@
         "theme": "Theme",
         "themeDescription": "Choose your preferred color theme",
         "darkMode": "Dark",
-        "lightMode": "Light"
+        "lightMode": "Light",
+        "language": "Language",
+        "languageDescription": "Choose your preferred language",
+        "languageDropdown": {
+          "en": "English",
+          "pt": "Portuguese (Portugal)"
+        }
       },
 
       "hidden_games": {
