@@ -37,7 +37,8 @@
     "playedMonthsAgo": "Played {{months}} months ago",
     "context_menu_edit": "Edit",
     "context_menu_hide": "Hide",
-    "context_menu_remove": "Remove"
+    "context_menu_remove": "Remove",
+    "unhide": "Unhide"
   },
 
   "addGame": {
@@ -63,7 +64,8 @@
     "coverImage": "Cover Image",
     "onlyCoverEditable": "Only cover image can be changed for {{store}} games.",
     "browse": "Browse",
-    "steamGridDB": "SteamGridDB"
+    "steamGridDB": "SteamGridDB",
+    "steamGridDBTooltip": "Download cover from SteamGridDB"
   },
 
   "settings": {
@@ -123,7 +125,8 @@
         "updateReadyToInstallButton": "Restart & Install",
         "latestVersion": "You're running the latest version!",
         "updateTryAgain": "Try Again",
-        "checkUpdatesButton": "Check for Updates"
+        "checkUpdatesButton": "Check for Updates",
+        "error": "Error"
       }
     },
     
@@ -163,5 +166,13 @@
     "scanningEpicGames": "Scanning for Epic games...",
     "scanComplete": "Scan complete!",
     "preparingToScan": "Preparing to scan..."
+  },
+
+  "changelog": {
+    "title": "What's new",
+    "viewOnline": "View changelog online",
+    "version": "Version {{version}}",
+    "noChanges": "No changelog entries found."
   }
+
 }

@@ -69,7 +69,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
     <div className="fixed inset-0 bg-black/70 modal-overlay flex items-center justify-center z-50">
       <div className="bg-theme-surface border border-theme-border rounded-2xl w-full max-w-xl mx-4 overflow-hidden fade-in">
         <div className="flex items-center justify-between px-6 py-4 border-b border-theme-border">
-          <h2 className="text-lg font-semibold text-theme-text">Edit Game</h2>
+          <h2 className="text-lg font-semibold text-theme-text">{t('editGame.title')}</h2>
           <button
             onClick={onClose}
             className="p-1 text-theme-textSecondary hover:text-theme-text transition-colors"
@@ -142,7 +142,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
                 type="button"
                 onClick={() => setShowSteamGridDB(true)}
                 className="px-4 py-2 bg-theme-card border border-theme-border rounded-lg text-primary-500 hover:bg-theme-border transition-colors"
-                title="Download from SteamGridDB"
+                title={t('editGame.steamGridDBTooltip')}
               >
                 {t('editGame.steamGridDB')}
               </button>

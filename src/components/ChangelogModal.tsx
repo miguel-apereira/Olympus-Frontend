@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface ChangelogModalProps {
   isOpen: boolean
@@ -15,6 +16,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
   const [changelog, setChangelog] = useState<ChangelogEntry[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (!isOpen) return
@@ -90,7 +92,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 bg-black/70 modal-overlay flex items-center justify-center z-50">
       <div className="bg-theme-surface border border-theme-border rounded-2xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto fade-in">
         <div className="flex items-center justify-between px-6 py-4 border-b border-theme-border">
-          <h2 className="text-lg font-semibold text-theme-text">What's New</h2>
+          <h2 className="text-lg font-semibold text-theme-text">{t('changelog.title')}</h2>
           <button
             onClick={onClose}
             className="p-1 text-theme-textSecondary hover:text-theme-text transition-colors"
@@ -113,14 +115,14 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                 onClick={() => window.open('https://github.com/miguel-apereira/Olympus-Frontend/wiki/Changelog', '_blank')}
                 className="text-primary-600 hover:underline text-sm"
               >
-                View changelog online
+                {t('changelog.viewOnline')}
               </button>
             </div>
           ) : changelog.length > 0 ? (
             <div className="space-y-6">
               {changelog.map((entry, index) => (
                 <div key={index} className="text-theme-text text-sm leading-relaxed">
-                  <h2 className="font-semibold mb-3 text-theme-text text-base">Version {entry.version}</h2>
+                  <h2 className="font-semibold mb-3 text-theme-text text-base"> {t('changelog.version', { version: entry.version })}</h2>
                    <ul className="space-y-2 ml-4">
                      {entry.changes.map((change, i) => (
                        <li key={i} dangerouslySetInnerHTML={{ __html: `• ${change}` }} />
@@ -133,7 +135,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-sm text-theme-textSecondary">No changelog entries found.</p>
+              <p className="text-sm text-theme-textSecondary">{t('changelog.noChanges')}</p>
             </div>
           )}
         </div>
