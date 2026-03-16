@@ -97,6 +97,7 @@ function App() {
         scanOnStartup: loadedSettings?.scanOnStartup ?? true,
         hardwareAcceleration: loadedSettings?.hardwareAcceleration ?? true,
         language: loadedSettings?.language || 'en',
+        showStoreOnGameCard: loadedSettings?.showStoreOnGameCard ?? true,
         integrations: loadedSettings?.integrations
       }
       
