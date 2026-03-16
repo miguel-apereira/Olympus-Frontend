@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { GameInfo } from '../types'
 import { ThemeColors } from '../config'
 import { sidebarIcons } from '../config/sidebarIcons'
-import { Tooltip } from './Tooltip'
 
 interface GameCardProps {
   game: GameInfo
