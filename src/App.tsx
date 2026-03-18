@@ -444,6 +444,7 @@ function App() {
                     {currentView === 'recent' && t('sidebar.recentlyPlayed')}
                     {currentView === 'steam' && t('app.steamGamesTitle')}
                     {currentView === 'epic' && t('app.epicGamesTitle')}
+                    {currentView === 'ea' && t('app.eaGamesTitle')}
                     {currentView === 'custom' && t('app.customGamesTitle')}
                   </h1>
                   <p className="text-sm mt-1" style={{ color: themeColors.textSecondary }}>

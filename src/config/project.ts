@@ -6,7 +6,7 @@ export const project = {
   supportedStoreNames: {
     steam: 'Steam',
     epic: 'Epic Games',
-    ea: 'EA',
+    ea: 'EA App',
     custom: 'Custom'
   }
 }

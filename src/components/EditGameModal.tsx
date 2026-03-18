@@ -191,7 +191,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
         <SteamGridDBModal
           gameName={name}
           gameId={game.id}
-          steamAppId={game.appid}
+          steamAppId={game.store === 'steam' ? game.appid : undefined}
           theme={theme}
           onClose={() => setShowSteamGridDB(false)}
           onCoverSelected={handleCoverSelected}
