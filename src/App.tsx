@@ -30,7 +30,7 @@ function App() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingGame, setEditingGame] = useState<GameInfo | null>(null)
   const [settings, setSettings] = useState<Settings>({ theme: 'dark', scanOnStartup: true, hardwareAcceleration: true })
-  const [storesFound, setStoresFound] = useState<{ steam: boolean; epic: boolean }>({ steam: true, epic: true })
+  const [storesFound, setStoresFound] = useState<{ steam: boolean; epic: boolean; ea: boolean }>({ steam: true, epic: true, ea: true })
   const [isScanning, setIsScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [scanProgress, setScanProgress] = useState<{ current: number; total: number; currentGame: string; store: string } | null>(null)
@@ -83,7 +83,8 @@ function App() {
       
       setStoresFound({
         steam: !!storePaths.steamPath,
-        epic: !!storePaths.epicPath
+        epic: !!storePaths.epicPath,
+        ea: !!storePaths.eaPath
       })
       
       const favoriteSet = new Set(favorites)
@@ -407,6 +408,7 @@ function App() {
             recent: games.filter(g => g.lastPlayed).length,
             steam: games.filter(g => g.store === 'steam').length,
             epic: games.filter(g => g.store === 'epic').length,
+            ea: games.filter(g => g.store === 'ea').length,
             custom: games.filter(g => g.store === 'custom').length
           }}
           theme={settings.theme}
@@ -442,6 +444,7 @@ function App() {
                     {currentView === 'recent' && t('sidebar.recentlyPlayed')}
                     {currentView === 'steam' && t('app.steamGamesTitle')}
                     {currentView === 'epic' && t('app.epicGamesTitle')}
+                    {currentView === 'ea' && t('app.eaGamesTitle')}
                     {currentView === 'custom' && t('app.customGamesTitle')}
                   </h1>
                   <p className="text-sm mt-1" style={{ color: themeColors.textSecondary }}>

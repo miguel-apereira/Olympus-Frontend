@@ -3,7 +3,7 @@ export interface GameInfo {
   name: string
   executablePath: string
   coverImage?: string
-  store: 'steam' | 'epic' | 'custom'
+  store: 'steam' | 'epic' | 'ea' | 'custom'
   installLocation?: string
   lastPlayed?: string
   playCount?: number

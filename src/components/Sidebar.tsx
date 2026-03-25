@@ -13,6 +13,7 @@ interface SidebarProps {
   storesFound?: {
     steam: boolean
     epic: boolean
+    ea: boolean
   }
   onLaunchStore?: (storeName: string) => void
 }
@@ -49,6 +50,11 @@ export default function Sidebar({ currentView, onViewChange, gameCounts, theme, 
       id: 'epic' as ViewType,
       label: project.supportedStoreNames.epic,
       icon: sidebarIcons.epic
+    }] : []),
+    ...(storesFound?.ea ? [{
+      id: 'ea' as ViewType,
+      label: project.supportedStoreNames.ea,
+      icon: sidebarIcons.ea
     }] : []),
     {
       id: 'custom' as ViewType,
@@ -103,7 +109,7 @@ export default function Sidebar({ currentView, onViewChange, gameCounts, theme, 
         </nav>
 
         {/* Store Launch Buttons Section */}
-        {onLaunchStore && (storesFound?.steam || storesFound?.epic) && (
+        {onLaunchStore && (storesFound?.steam || storesFound?.epic || storesFound?.ea) && (
           <div className="p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="h-px bg-theme-border flex-1"></div>
@@ -132,6 +138,17 @@ export default function Sidebar({ currentView, onViewChange, gameCounts, theme, 
                     style={{ color: themeColors.textSecondary }}
                   >
                     <span className="text-base">{sidebarIcons.epic}</span>
+                  </button>
+                </Tooltip>
+              )}
+              {storesFound?.ea && (
+                <Tooltip text={t('sidebar.openEA')}>
+                  <button
+                    onClick={() => onLaunchStore('ea')}
+                    className="p-2 rounded-lg hover:bg-theme-border transition-colors flex items-center justify-center"
+                    style={{ color: themeColors.textSecondary }}
+                  >
+                    <span className="text-base">{sidebarIcons.ea}</span>
                   </button>
                 </Tooltip>
               )}

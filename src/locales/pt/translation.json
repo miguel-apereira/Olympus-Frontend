@@ -16,6 +16,7 @@
     "description": "Let your games reside in Mount Olympus and launch them from there.",
     "steamGamesTitle": "Biblioteca Steam",
     "epicGamesTitle": "Biblioteca Epic Games",
+    "eaGamesTitle": "Biblioteca da EA",
     "customGamesTitle": "Jogos adicionados por ti",
     "addGameButton": "Adicionar Jogo"
   },
@@ -29,7 +30,8 @@
     "customGamesTab": "Jogos Adicionados",
     "foundClients": "Clientes Encontrados",
     "openSteam": "Abrir a Steam",
-    "openEpicGames": "Abrir a Epic Games"
+    "openEpicGames": "Abrir a Epic Games",
+    "openEA": "Abrir a EA App"
   },
 
   "gameGrid": {
@@ -98,14 +100,14 @@
         "scanOnStartup": "Procurar jogos no arranque",
         "scanOnStartupDescription": "Se ativado, o Olympus irá procurar por jogos instalados no teu computador cada vez que o iniciares.",
         "manualScan": "Procura Manual",
-        "manualScanDescription": "Procura por jogos instalados no teu computador através da Steam e Epic Games. Jogos instalados manualmente, devem ser adicionados ao Olympus manualmente.",
+        "manualScanDescription": "Procura por jogos instalados no teu computador através da Steam, Epic Games e EA App. Jogos instalados manualmente, devem ser adicionados ao Olympus manualmente.",
         "hardwareAcceleration": "Aceleração de Hardware",
         "hardwareAccelerationDescription": "Ativa ou desativa a aceleração de hardware. Desativar pode ajudar a resolver problemas gráficos, mas pode causar um desempenho geral mais lento.",
         "appearance": "Aparência",
         "theme": "Tema",
         "themeDescription": "Escolhe o tema que preferires para a aplicação.",
         "showStoreOnGameCard": "Mostrar Nome da Loja",
-        "showStoreOnGameCardDescription": "Mostrar o nome da loja (Steam, Epic, Personalizado) nos cartões de jogos",
+        "showStoreOnGameCardDescription": "Mostrar o nome da loja (Steam, Epic, EA App, Personalizado) nos cartões de jogos",
         "darkMode": "Escuro",
         "lightMode": "Claro",
         "language": "Língua",
@@ -144,7 +146,7 @@
         "tabLabel": "Sobre",
         "about": "Sobre",
         "version": "Versão",
-        "aboutText": "O Olympus é um launcher de jogos leve e personalizável para PC, projetado para organizar e correr todos os teus jogos a partir de um único local. Ele suporta jogos da Steam, Epic Games e jogos adicionados manualmente, oferecendo uma experiência de utilizador fluida e agradável.",
+        "aboutText": "O Olympus é um launcher de jogos leve e personalizável para PC, projetado para organizar e correr todos os teus jogos a partir de um único local. Suporta jogos da Steam, Epic Games, EA, e jogos adicionados manualmente, oferecendo uma experiência de utilizador fluida e agradável.",
         "withLove": "Feito em Portugal com ❤️",
         "update": "Atualizar Aplicação",
         "checkUpdatesButton": "Verificar Atualizações",
@@ -180,8 +182,10 @@
     "scanningGames": "A procurar jogos",
     "scanningSteamGames": "A procurar por jogos da Steam...",
     "scanningEpicGames": "A procurar por jogos da Epic...",
+    "scanningEAGames": "A procurar por jogos da EA...",
     "scanComplete": "Procura concluída!",
-    "preparingToScan": "A preparar para procurar..."
+    "preparingToScan": "A preparar para procurar...",
+    "foundGames": "{{current}} de {{total}} jogos encontrados" 
   },
 
   "changelog": {

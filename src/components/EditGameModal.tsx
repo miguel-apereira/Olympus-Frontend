@@ -20,7 +20,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
   const [isLoading, setIsLoading] = useState(false)
   const [showSteamGridDB, setShowSteamGridDB] = useState(false)
 
-  const isStoreGame = game.store === 'steam' || game.store === 'epic'
+  const isStoreGame = game.store === 'steam' || game.store === 'epic' || game.store === 'ea'
 
   const handleCoverSelected = (coverPath: string) => {
     setCoverImage(coverPath)
@@ -191,7 +191,7 @@ export default function EditGameModal({ game, theme, onClose, onSave }: EditGame
         <SteamGridDBModal
           gameName={name}
           gameId={game.id}
-          steamAppId={game.appid}
+          steamAppId={game.store === 'steam' ? game.appid : undefined}
           theme={theme}
           onClose={() => setShowSteamGridDB(false)}
           onCoverSelected={handleCoverSelected}

@@ -16,6 +16,7 @@
     "description": "Let your games reside in Mount Olympus and launch them from there.",
     "steamGamesTitle": "Steam Library",
     "epicGamesTitle": "Epic Games Library",
+    "eaGamesTitle": "EA Library",
     "customGamesTitle": "Custom Games",
     "addGameButton": "Add Game"
   },
@@ -29,7 +30,8 @@
     "customGamesTab": "Custom",
     "foundClients": "Found Clients",
     "openSteam": "Launch Steam",
-    "openEpicGames": "Launch Epic Games"
+    "openEpicGames": "Launch Epic Games",
+    "openEA": "Launch EA App"
   },
 
   "gameGrid": {
@@ -98,14 +100,14 @@
         "scanOnStartup": "Scan on startup",
         "scanOnStartupDescription": "Automatically scan for new games when the app launches",
         "manualScan": "Manual Scan",
-        "manualScanDescription": "Scan your computer for installed games from Steam and Epic Games.",
+        "manualScanDescription": "Scan your computer for installed games from Steam, Epic Games, and EA.",
         "hardwareAcceleration": "Hardware Acceleration",
         "hardwareAccelerationDescription": "Use GPU for smoother rendering. Disable if you experience display issues.",
         "appearance": "Appearance",
         "theme": "Theme",
         "themeDescription": "Choose your preferred color theme",
         "showStoreOnGameCard": "Show Store Name",
-        "showStoreOnGameCardDescription": "Display the store name (Steam, Epic, Custom) on game cards",
+        "showStoreOnGameCardDescription": "Display the store name (Steam, Epic, EA, Custom) on game cards",
         "darkMode": "Dark",
         "lightMode": "Light",
         "language": "Language",
@@ -144,7 +146,7 @@
         "tabLabel": "About",
         "about": "About",
         "version": "Version",
-        "aboutText": "Olympus is a lightweight and customizable PC game launcher designed to organize and launch all your games from a single place. It supports games from Steam, Epic Games, and manually added titles, providing a smooth and enjoyable user experience.",
+        "aboutText": "Olympus is a lightweight and customizable PC game launcher designed to organize and launch all your games from a single place. It supports games from Steam, Epic Games, EA, and manually added titles, providing a smooth and enjoyable user experience.",
         "withLove": "From Portugal with ❤️",
         "update": "Check for Updates",
         "checkUpdatesButton": "Check for Updates",
@@ -180,8 +182,10 @@
     "scanningGames": "Scanning for Games",
     "scanningSteamGames": "Scanning for Steam games...",
     "scanningEpicGames": "Scanning for Epic games...",
+    "scanningEAGames": "Scanning for EA games...",
     "scanComplete": "Scan complete!",
-    "preparingToScan": "Preparing to scan..."
+    "preparingToScan": "Preparing to scan...",
+    "foundGames": "{{current}} of {{total}} games found" 
   },
 
   "changelog": {

@@ -20,7 +20,15 @@ interface GameCardProps {
 const storeLogos: Record<string, ReactElement> = {
   steam: cloneElement(sidebarIcons.steam, { className: 'w-4 h-4' }),
   epic: cloneElement(sidebarIcons.epic, { className: 'w-4 h-4' }),
+  ea: cloneElement(sidebarIcons.ea, { className: 'w-4 h-4' }),
   custom: cloneElement(sidebarIcons.custom, { className: 'w-4 h-4' }),
+}
+
+const storeDisplayNames: Record<string, string> = {
+  steam: 'Steam',
+  epic: 'Epic',
+  ea: 'EA',
+  custom: 'Custom',
 }
 
 export default function GameCard({ game, viewMode, onLaunch, onRemove, onHide, onUnhide, onToggleFavorite, onEdit, themeColors, showStoreOnGameCard }: GameCardProps) {
@@ -84,7 +92,7 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onHide, o
               className="px-2 py-1 rounded text-xs font-medium"
               style={{ backgroundColor: 'transparent', color: themeColors.textSecondary }}
             >
-              {game.store.charAt(0).toUpperCase() + game.store.slice(1)}
+              {storeDisplayNames[game.store] || game.store}
             </span>
           )}
 
@@ -197,7 +205,7 @@ export default function GameCard({ game, viewMode, onLaunch, onRemove, onHide, o
               style={{ backgroundColor: 'transparent', textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}
             >
               {storeLogos[game.store]}
-              {game.store.charAt(0).toUpperCase() + game.store.slice(1)}
+              {storeDisplayNames[game.store] || game.store}
             </span>
           )}
         </div>

@@ -8,6 +8,7 @@ import Store from 'electron-store'
 import { autoUpdater } from 'electron-updater'
 import { getSteamGames, getSteamLaunchUrl, getSteamInstallPath } from './getSteamGames'
 import { getEpicGames } from './getEpicGames'
+import { getEAGames } from './getEAGames'
 import { isAppRunning } from './gameProcess'
 import { updateStorePaths, getEpicInstallPath } from './getStoresPath'
 import { GameInfo, Settings } from './types'
@@ -236,7 +237,10 @@ ipcMain.handle('scan-games', async (event) => {
     sendProgress(0, 0, '', 'epic')
     const epicGames = await getEpicGames()
 
-    const allDetectedGames = [...steamGames, ...epicGames]
+    sendProgress(0, 0, '', 'ea')
+    const eaGames = await getEAGames()
+
+    const allDetectedGames = [...steamGames, ...epicGames, ...eaGames]
     const detectedIds = new Set(allDetectedGames.map(g => g.id))
 
     const keptGames = nonCustomGames.filter(g => detectedIds.has(g.id))
@@ -244,6 +248,15 @@ ipcMain.handle('scan-games', async (event) => {
     const removedGames = nonCustomGames.filter(g => !detectedIds.has(g.id))
     if (removedGames.length > 0) {
       log.info(`Removing ${removedGames.length} uninstalled games: ${removedGames.map(g => g.name).join(', ')}`)
+      for (const game of removedGames) {
+        const coversPath = path.join(app.getPath('userData'), 'config', 'covers', game.id)
+        try {
+          await fsPromises.rm(coversPath, { recursive: true, force: true })
+          log.info('Deleted covers folder for uninstalled game:', game.name)
+        } catch (err) {
+          log.warn('Failed to delete covers folder for game:', game.name, err)
+        }
+      }
     }
 
     const newGames = allDetectedGames.filter(g => !existingIds.has(g.id))
@@ -285,6 +298,15 @@ ipcMain.handle('add-game', async (_, game: Omit<GameInfo, 'id'>) => {
 
 ipcMain.handle('remove-game', async (_, gameId: string) => {
   log.info('IPC: remove-game called', gameId)
+
+  const coversPath = path.join(app.getPath('userData'), 'config', 'covers', gameId)
+  try {
+    await fsPromises.rm(coversPath, { recursive: true, force: true })
+    log.info('Deleted covers folder:', coversPath)
+  } catch (err) {
+    log.warn('Failed to delete covers folder:', err)
+  }
+
   const games = store.get('games') as GameInfo[]
   const filtered = games.filter(g => g.id !== gameId)
   store.set('games', filtered)
@@ -318,6 +340,16 @@ ipcMain.handle('launch-store', async (_, storeName: string) => {
       } else {
         log.warn('Epic Games not found')
         return { success: false, message: 'Epic Games not installed' }
+      }
+    } else if (storeName === 'ea') {
+      const { getEAInstallPath } = await import('./getEAGames')
+      const eaPath = await getEAInstallPath()
+      if (eaPath) {
+        log.info(`Launching EA App: ${eaPath}`)
+        exec(`"${eaPath}"`)
+      } else {
+        log.warn('EA App not found')
+        return { success: false, message: 'EA App not installed' }
       }
     } else {
       log.warn(`Unknown store: ${storeName}`)
@@ -358,6 +390,10 @@ ipcMain.handle('launch-game', async (_, game: GameInfo) => {
         : game.executablePath
       log.info(`Launching Epic game via: ${epicUrl}`)
       await shell.openExternal(epicUrl)
+    } else if (game.store === 'ea' || game.executablePath.startsWith('origin2://')) {
+      const eaUrl = game.executablePath
+      log.info(`Launching EA game via: ${eaUrl}`)
+      await shell.openExternal(eaUrl)
     } else {
       await shell.openPath(game.executablePath)
     }
@@ -448,10 +484,11 @@ ipcMain.handle('refresh-store-paths', async () => {
 })
 
 ipcMain.handle('get-store-paths', async () => {
-  const settings = store.get('settings') as { gameClients?: { steam?: string | null; epic?: string | null } }
+  const settings = store.get('settings') as { gameClients?: { steam?: string | null; epic?: string | null; ea?: string | null } }
   return {
     steamPath: settings?.gameClients?.steam || null,
-    epicPath: settings?.gameClients?.epic || null
+    epicPath: settings?.gameClients?.epic || null,
+    eaPath: settings?.gameClients?.ea || null
   }
 })
 

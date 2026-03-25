@@ -58,6 +58,7 @@ export default function ScanProgressModal({ isOpen, progress }: ScanProgressModa
               <p className="text-gray-400 text-sm">
                 {progress.store === 'steam' && t('scanProgress.scanningSteamGames')}
                 {progress.store === 'epic' && t('scanProgress.scanningEpicGames')}
+                {progress.store === 'ea' && t('scanProgress.scanningEAGames')}
                 {progress.store === 'complete' && t('scanProgress.scanComplete')}
               </p>
               
@@ -76,7 +77,7 @@ export default function ScanProgressModal({ isOpen, progress }: ScanProgressModa
                     />
                   </div>
                   <p className="text-gray-500 text-xs">
-                    {progress.current} of {progress.total} games found
+                    {t('scanProgress.foundGames', { current: progress.current, total: progress.total })}
                   </p>
                 </>
               )}

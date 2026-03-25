@@ -39,8 +39,8 @@ interface Window {
     saveGameCover: (gameId: string, imagePath: string) => Promise<string>
     getSettings: () => Promise<import('./types').Settings>
     saveSettings: (settings: import('./types').Settings) => Promise<boolean>
-    refreshStorePaths: () => Promise<{ steam: string | null; epic: string | null }>
-    getStorePaths: () => Promise<{ steamPath: string | null; epicPath: string | null }>
+    refreshStorePaths: () => Promise<{ steam: string | null; epic: string | null; ea: string | null }>
+    getStorePaths: () => Promise<{ steamPath: string | null; epicPath: string | null; eaPath: string | null }>
     getFavorites: () => Promise<string[]>
     saveFavorites: (favoriteIds: string[]) => Promise<boolean>
     toggleFavorite: (gameId: string) => Promise<string[]>

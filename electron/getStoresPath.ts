@@ -8,6 +8,7 @@ import fs from 'fs'
 interface StorePaths {
   steam: string | null
   epic: string | null
+  ea: string | null
 }
 
 const configDir = path.join(app.getPath('userData'), 'config')
@@ -85,12 +86,60 @@ export async function getEpicInstallPath(): Promise<string | null> {
   })
 }
 
+export async function getEAAppInstallPath(): Promise<string | null> {
+  return new Promise((resolve) => {
+    exec(
+      'reg query "HKLM\\SOFTWARE\\Electronic Arts\\EA Desktop" /v LauncherAppPath',
+      { windowsHide: true },
+      (error, stdout) => {
+        if (error) {
+          exec(
+            'reg query "HKLM\\SOFTWARE\\WOW6432Node\\Origin" /v ClientPath',
+            { windowsHide: true },
+            (err, out) => {
+              if (err) {
+                log.debug('Could not find EA App in registry')
+                resolve(null)
+              } else {
+                const match = out.match(/ClientPath\s+REG_SZ\s+(.+)/)
+                if (match) {
+                  let eaPath = match[1].trim().replace(/\//g, '\\')
+                  if (!eaPath.toLowerCase().endsWith('ealauncher.exe')) {
+                    eaPath = path.join(eaPath, 'EALauncher.exe')
+                  }
+                  log.info(`Found EA App in WOW6432Node\\Origin: ${eaPath}`)
+                  resolve(eaPath)
+                } else {
+                  resolve(null)
+                }
+              }
+            }
+          )
+        } else {
+          const match = stdout.match(/LauncherAppPath\s+REG_SZ\s+(.+)/)
+          if (match) {
+            let eaPath = match[1].trim().replace(/\//g, '\\')
+            if (!eaPath.toLowerCase().endsWith('ealauncher.exe')) {
+              eaPath = path.join(eaPath, 'EALauncher.exe')
+            }
+            log.info(`Found EA App in Electronic Arts\\EA Desktop: ${eaPath}`)
+            resolve(eaPath)
+          } else {
+            resolve(null)
+          }
+        }
+      }
+    )
+  })
+}
+
 export async function updateStorePaths(): Promise<StorePaths> {
   const store = getStore()
   
   const steamInstallPath = await getSteamInstallPath()
   const steamPath = steamInstallPath ? path.join(steamInstallPath, 'steam.exe') : null
   const epicPath = await getEpicInstallPath()
+  const eaPath = await getEAAppInstallPath()
   
   const currentSettings = store.get('settings') as Record<string, unknown> || {}
   
@@ -98,15 +147,16 @@ export async function updateStorePaths(): Promise<StorePaths> {
     ...currentSettings,
     gameClients: {
       steam: steamPath,
-      epic: epicPath
+      epic: epicPath,
+      ea: eaPath
     }
   }
   
   store.set('settings', newSettings)
   
-  log.info(`Store paths updated - Steam: ${steamPath}, Epic: ${epicPath}`)
+  log.info(`Store paths updated - Steam: ${steamPath}, Epic: ${epicPath}, EA: ${eaPath}`)
   
-  return { steam: steamPath, epic: epicPath }
+  return { steam: steamPath, epic: epicPath, ea: eaPath }
 }
 
 export function getStorePathsFromSettings(): StorePaths {
@@ -115,12 +165,13 @@ export function getStorePathsFromSettings(): StorePaths {
       const data = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'))
       return {
         steam: data.settings?.gameClients?.steam || null,
-        epic: data.settings?.gameClients?.epic || null
+        epic: data.settings?.gameClients?.epic || null,
+        ea: data.settings?.gameClients?.ea || null
       }
     }
   } catch (error) {
     log.error('Error reading store paths from settings:', error)
   }
   
-  return { steam: null, epic: null }
+  return { steam: null, epic: null, ea: null }
 }

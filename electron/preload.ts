@@ -73,8 +73,8 @@ interface ElectronAPI {
   saveGameCover: (gameId: string, imagePath: string) => Promise<string>
   getSettings: () => Promise<Settings>
   saveSettings: (settings: Settings) => Promise<boolean>
-  refreshStorePaths: () => Promise<{ steam: string | null; epic: string | null }>
-  getStorePaths: () => Promise<{ steamPath: string | null; epicPath: string | null }>
+  refreshStorePaths: () => Promise<{ steam: string | null; epic: string | null; ea: string | null }>
+  getStorePaths: () => Promise<{ steamPath: string | null; epicPath: string | null; eaPath: string | null }>
   getFavorites: () => Promise<string[]>
   saveFavorites: (favoriteIds: string[]) => Promise<boolean>
   toggleFavorite: (gameId: string) => Promise<string[]>
@@ -95,6 +95,7 @@ interface ElectronAPI {
   getSteamGridDBGridsByAppId: (appId: string) => Promise<{ grids: SteamGridDBGrid[]; error?: string }>
   downloadSteamGridDBCover: (gridUrl: string, gameId: string) => Promise<{ path: string; error?: string }>
   initSteamGridDB: (apiKey: string) => Promise<{ success: boolean; error?: string }>
+  validateSteamGridDBKey: () => Promise<{ success: boolean; error?: string }>
   checkSteamGridDBStatus: () => Promise<{ initialized: boolean }>
   openExternal: (url: string) => Promise<{ success: boolean; error?: string }>
 }
@@ -114,8 +115,8 @@ const electronAPI: ElectronAPI = {
   saveGameCover: (gameId: string, imagePath: string): Promise<string> => ipcRenderer.invoke('save-game-cover', gameId, imagePath),
   getSettings: (): Promise<Settings> => ipcRenderer.invoke('get-settings'),
   saveSettings: (settings: Settings): Promise<boolean> => ipcRenderer.invoke('save-settings', settings),
-  refreshStorePaths: (): Promise<{ steam: string | null; epic: string | null }> => ipcRenderer.invoke('refresh-store-paths'),
-  getStorePaths: (): Promise<{ steamPath: string | null; epicPath: string | null }> => ipcRenderer.invoke('get-store-paths'),
+  refreshStorePaths: (): Promise<{ steam: string | null; epic: string | null; ea: string | null }> => ipcRenderer.invoke('refresh-store-paths'),
+  getStorePaths: (): Promise<{ steamPath: string | null; epicPath: string | null; eaPath: string | null }> => ipcRenderer.invoke('get-store-paths'),
   getFavorites: (): Promise<string[]> => ipcRenderer.invoke('get-favorites'),
   saveFavorites: (favoriteIds: string[]): Promise<boolean> => ipcRenderer.invoke('save-favorites', favoriteIds),
   toggleFavorite: (gameId: string): Promise<string[]> => ipcRenderer.invoke('toggle-favorite', gameId),

@@ -2,10 +2,11 @@ export const project = {
   name: 'Olympus',
   version: '1.2.0',
   author: 'Salierus',
-  supportedStores: ['steam', 'epic', 'custom'] as const,
+  supportedStores: ['steam', 'epic', 'ea', 'custom'] as const,
   supportedStoreNames: {
     steam: 'Steam',
     epic: 'Epic Games',
+    ea: 'EA App',
     custom: 'Custom'
   }
 }
