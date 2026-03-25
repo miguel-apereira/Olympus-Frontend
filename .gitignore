@@ -145,3 +145,4 @@ dist/
 dist-electron/
 AGENTS.md
 .opencode/*
+build/

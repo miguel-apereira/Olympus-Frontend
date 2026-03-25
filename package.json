@@ -67,8 +67,18 @@
       "artifactName": "Olympus-Setup.${ext}"
     },
     "nsis": {
+      "shortcutName": "Olympus",
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeader": "build/headerImage.bmp",
+      "installerSidebar": "build/sidebarImage.bmp",
+      "license": "build/license.txt"
     },
     "publish": {
       "provider": "github",
