@@ -248,6 +248,15 @@ ipcMain.handle('scan-games', async (event) => {
     const removedGames = nonCustomGames.filter(g => !detectedIds.has(g.id))
     if (removedGames.length > 0) {
       log.info(`Removing ${removedGames.length} uninstalled games: ${removedGames.map(g => g.name).join(', ')}`)
+      for (const game of removedGames) {
+        const coversPath = path.join(app.getPath('userData'), 'config', 'covers', game.id)
+        try {
+          await fsPromises.rm(coversPath, { recursive: true, force: true })
+          log.info('Deleted covers folder for uninstalled game:', game.name)
+        } catch (err) {
+          log.warn('Failed to delete covers folder for game:', game.name, err)
+        }
+      }
     }
 
     const newGames = allDetectedGames.filter(g => !existingIds.has(g.id))
@@ -289,6 +298,15 @@ ipcMain.handle('add-game', async (_, game: Omit<GameInfo, 'id'>) => {
 
 ipcMain.handle('remove-game', async (_, gameId: string) => {
   log.info('IPC: remove-game called', gameId)
+
+  const coversPath = path.join(app.getPath('userData'), 'config', 'covers', gameId)
+  try {
+    await fsPromises.rm(coversPath, { recursive: true, force: true })
+    log.info('Deleted covers folder:', coversPath)
+  } catch (err) {
+    log.warn('Failed to delete covers folder:', err)
+  }
+
   const games = store.get('games') as GameInfo[]
   const filtered = games.filter(g => g.id !== gameId)
   store.set('games', filtered)
