@@ -64,7 +64,7 @@
           ]
         }
       ],
-      "artifactName": "Olympus-Setup-${version}.${ext}"
+      "artifactName": "Olympus-Setup.${ext}"
     },
     "nsis": {
       "oneClick": false,

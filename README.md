@@ -64,9 +64,10 @@
 <ul>
   <li>Steam</li>
   <li>Epic Games Store</li>
+  <li>EA App (Added on 1.2.0)</li>
 </ul>
 
-<p>More platforms coming soon.</p>
+<p>More platforms coming soon!</p>
 
 <br/>
 
@@ -74,22 +75,26 @@
 
 <ul>
   <li>Emulation support</li>
-  <li>More store integrations</li>
+  <li>More store integrations
+    <ul>
+        <li>EA App ✅ (v1.2.0)</li>
+    </ul>
+  </li>
   <li>Optional splash arts</li>
   <li>Auto-close clients after gameplay</li>
   <li>Fullscreen console-like mode</li>
   <li>Custom Themes</li>
   <li>Custom Filters (Tabs)</li>
-  <li>SteamGridDB Integration</li>
+  <li>SteamGridDB Integration ✅ (v1.2.0)</li>
   <li>HowLongToBeat Integration</li>
-  <li>Localization</li>
+  <li>Localization ✅ (v1.2.0)</li>
 </ul>
 
 <hr/>
 
 <!-- SCREENSHOT PREVIEW -->
 
-<h2 align="center">Screenshots</h2>
+<h2 align="center">Screenshots (v1.0.3)</h2>
 
 <p align="center">
   <img 
