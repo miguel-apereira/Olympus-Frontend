@@ -1,9 +1,9 @@
 {
   "name": "olympus-frontend",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Modern PC Game Launcher",
   "main": "dist-electron/main.js",
-  "author": "Salierus",
+  "author": "Olympus Launcher",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
@@ -75,15 +75,15 @@
       "createStartMenuShortcut": true,
       "deleteAppDataOnUninstall": true,
       "installerIcon": "build/icon.ico",
-      "uninstallerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/uninstall-icon.ico",
       "installerHeader": "build/headerImage.bmp",
       "installerSidebar": "build/sidebarImage.bmp",
       "license": "build/license.txt"
     },
     "publish": {
       "provider": "github",
-      "owner": "miguel-apereira",
-      "repo": "Olympus-Frontend"
+      "owner": "Olympus-Launcher",
+      "repo": "olympus"
     }
   }
 }

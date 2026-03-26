@@ -1,7 +1,7 @@
 export const project = {
   name: 'Olympus',
-  version: '1.2.0',
-  author: 'Salierus',
+  version: '1.2.1',
+  author: 'Olympus Launcher',
   supportedStores: ['steam', 'epic', 'ea', 'custom'] as const,
   supportedStoreNames: {
     steam: 'Steam',
