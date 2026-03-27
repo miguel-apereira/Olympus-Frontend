@@ -64,5 +64,6 @@ interface Window {
     validateSteamGridDBKey: () => Promise<{ success: boolean; error?: string }>
     checkSteamGridDBStatus: () => Promise<{ initialized: boolean }>
     openExternal: (url: string) => Promise<{ success: boolean; error?: string }>
+    openUrlWindow: (url: string) => Promise<{ success: boolean; error?: string }>
   }
 }

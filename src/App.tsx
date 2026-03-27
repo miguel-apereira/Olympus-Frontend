@@ -8,10 +8,17 @@ import TitleBar from './components/TitleBar'
 import ScanProgressModal from './components/ScanProgressModal'
 import EditGameModal from './components/EditGameModal'
 import ChangelogModal from './components/ChangelogModal'
+import WebView from './components/WebView'
 import { TooltipProvider } from './components/Tooltip'
 import { GameInfo, ViewType, Settings } from './types'
 import { themes } from './config'
 import { changeLanguage } from './i18n'
+
+const hash = window.location.hash
+const isFeedbackWindow = hash.startsWith('#feedback')
+const isKnowledgeBaseWindow = hash.startsWith('#knowledgebase')
+const windowTitle = isFeedbackWindow ? 'Feedback' : isKnowledgeBaseWindow ? 'Knowledge Base' : ''
+const windowUrl = isFeedbackWindow ? 'https://olympus.featurebase.app/' : isKnowledgeBaseWindow ? 'https://olympus.featurebase.app/help' : ''
 
 window.onerror = (message, source, lineno, colno, error) => {
   console.error('Global error:', message, source, lineno, colno, error)
@@ -22,7 +29,10 @@ window.onunhandledrejection = (event) => {
 }
 
 function App() {
-  const { t } = useTranslation()
+  if (isFeedbackWindow || isKnowledgeBaseWindow) {
+    return <WebView title={windowTitle} defaultUrl={windowUrl} />
+  }
+
   const [games, setGames] = useState<GameInfo[]>([])
   const [currentView, setCurrentView] = useState<ViewType>('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -36,7 +46,7 @@ function App() {
   const [scanProgress, setScanProgress] = useState<{ current: number; total: number; currentGame: string; store: string } | null>(null)
   const [updateStatus, setUpdateStatus] = useState<{ status: string; version?: string; percent?: number; error?: string } | null>(null)
   const [showChangelog, setShowChangelog] = useState(false)
-
+  const { t } = useTranslation()
   const themeColors = themes[settings.theme]
 
   useEffect(() => {
@@ -337,7 +347,7 @@ function App() {
   return (
     <TooltipProvider theme={settings.theme}>
       <div className="h-screen w-screen flex flex-col" style={appStyle}>
-        <TitleBar theme={settings.theme} onSettingsClick={() => setCurrentView('settings')} />
+        <TitleBar theme={settings.theme} onSettingsClick={() => setCurrentView('settings')} onKnowledgeBaseClick={() => window.electronAPI.openUrlWindow('https://olympus.featurebase.app/help')} />
       
        {updateStatus && updateStatus.status === 'available' && (
          <div className="bg-primary-600 px-4 py-2 flex items-center justify-between text-white">

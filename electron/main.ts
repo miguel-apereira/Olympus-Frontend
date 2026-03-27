@@ -523,23 +523,24 @@ ipcMain.handle('toggle-favorite', async (_, gameId: string) => {
 })
 
 ipcMain.handle('window-minimize', () => {
-  mainWindow?.minimize()
+  BrowserWindow.getFocusedWindow()?.minimize()
 })
 
 ipcMain.handle('window-maximize', () => {
-  if (mainWindow?.isMaximized()) {
-    mainWindow.unmaximize()
+  const win = BrowserWindow.getFocusedWindow()
+  if (win?.isMaximized()) {
+    win.unmaximize()
   } else {
-    mainWindow?.maximize()
+    win?.maximize()
   }
 })
 
 ipcMain.handle('window-close', () => {
-  mainWindow?.close()
+  BrowserWindow.getFocusedWindow()?.close()
 })
 
 ipcMain.handle('window-is-maximized', () => {
-  return mainWindow?.isMaximized() ?? false
+  return BrowserWindow.getFocusedWindow()?.isMaximized() ?? false
 })
 
 ipcMain.handle('restart-app', () => {
@@ -746,6 +747,43 @@ ipcMain.handle('open-external', async (_, url: string) => {
     return { success: true }
   } catch (error) {
     log.error('Error opening external URL:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+})
+
+ipcMain.handle('open-url-window', async (_, url: string) => {
+  log.info('IPC: open-url-window called', url)
+  try {
+    const feedbackWindow = new BrowserWindow({
+      width: 1000,
+      height: 700,
+      minWidth: 800,
+      minHeight: 500,
+      backgroundColor: '#0f0f0f',
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js'),
+        nodeIntegration: false,
+        contextIsolation: true,
+        sandbox: false
+      },
+      frame: false,
+      titleBarStyle: 'hidden',
+      show: false
+    })
+
+    feedbackWindow.once('ready-to-show', () => {
+      feedbackWindow.show()
+    })
+
+    const hash = url.includes('featurebase.app/help') ? 'knowledgebase' : 'feedback'
+    const baseUrl = VITE_DEV_SERVER_URL 
+      ? `${VITE_DEV_SERVER_URL}#${hash}?url=${encodeURIComponent(url)}`
+      : `file://${path.join(__dirname, '../dist/index.html')}#${hash}?url=${encodeURIComponent(url)}`
+    
+    await feedbackWindow.loadURL(baseUrl)
+    return { success: true }
+  } catch (error) {
+    log.error('Error opening URL window:', error)
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
 })

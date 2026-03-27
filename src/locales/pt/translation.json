@@ -2,6 +2,11 @@
 
   "app": {
 
+    "titlebar": {
+      "settings": "Definições",
+      "knowledgeBase": "Base de Conhecimento"
+    },
+
     "header": {
       "games": "jogos",
       "game": "jogo"
@@ -31,7 +36,8 @@
     "foundClients": "Clientes Encontrados",
     "openSteam": "Abrir a Steam",
     "openEpicGames": "Abrir a Epic Games",
-    "openEA": "Abrir a EA App"
+    "openEA": "Abrir a EA App",
+    "feedback": "Enviar Feedback"
   },
 
   "gameGrid": {
@@ -86,7 +92,7 @@
     "onlyCoverEditable": "Apenas a capa do jogo pode ser alterada para jogos da {{store}}.",
     "browse": "Procurar",
     "steamGridDB": "SteamGridDB",
-    "steamGridDBTooltip": "Fazer download de uma capa através do SteamGridDB"
+    "steamGridDBTooltip": "Fazer download de através do SteamGridDB"
   },
 
   "settings": {

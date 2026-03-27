@@ -2,6 +2,12 @@
 
   "app": {
 
+    "titlebar": {
+      "settings": "Settings",
+      "knowledgeBase": "Knowledge Base"
+    },
+
+
     "header": {
       "games": "games",
       "game": "game"
@@ -31,7 +37,8 @@
     "foundClients": "Found Clients",
     "openSteam": "Launch Steam",
     "openEpicGames": "Launch Epic Games",
-    "openEA": "Launch EA App"
+    "openEA": "Launch EA App",
+    "feedback": "Send Feedback"
   },
 
   "gameGrid": {
@@ -86,7 +93,7 @@
     "onlyCoverEditable": "Only cover image can be changed for {{store}} games.",
     "browse": "Browse",
     "steamGridDB": "SteamGridDB",
-    "steamGridDBTooltip": "Download cover from SteamGridDB"
+    "steamGridDBTooltip": "Download from SteamGridDB"
   },
 
   "settings": {

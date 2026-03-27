@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react'
 import { project, ThemeMode, themes } from '../config'
 import logoUrl from '../assets/logo.png'
+import { Tooltip } from './Tooltip'
+import { useTranslation } from 'react-i18next'
 
 interface TitleBarProps {
   theme: ThemeMode
   onSettingsClick?: () => void
+  onKnowledgeBaseClick?: () => void
 }
 
-export default function TitleBar({ theme, onSettingsClick }: TitleBarProps) {
+export default function TitleBar({ theme, onSettingsClick, onKnowledgeBaseClick }: TitleBarProps) {
   const [isMaximized, setIsMaximized] = useState(false)
-
+  const { t } = useTranslation()
   const themeColors = themes[theme]
 
   useEffect(() => {
@@ -49,6 +52,7 @@ export default function TitleBar({ theme, onSettingsClick }: TitleBarProps) {
       </div>
 
       <div className="flex items-center" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+        <Tooltip text={t('app.titlebar.settings')} position="bottom">
           <button
             onClick={onSettingsClick}
             className="w-10 h-10 flex items-center justify-center"
@@ -72,6 +76,31 @@ export default function TitleBar({ theme, onSettingsClick }: TitleBarProps) {
               </svg>
             </span>
           </button>
+        </Tooltip>
+          <Tooltip text={t('app.titlebar.knowledgeBase')} position="bottom">
+            <button
+              onClick={onKnowledgeBaseClick}
+              className="w-10 h-10 flex items-center justify-center"
+              style={{ color: themeColors.textSecondary }}
+            >
+              <span 
+                className="w-8 h-8 flex items-center justify-center rounded-md transition-colors duration-150"
+                style={{ 
+                  backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.0)' : 'rgba(0,0,0,0.0)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(255,255,255,0.0)' : 'rgba(0,0,0,0.0)'
+                }}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 48 48">
+                  <path fill="currentColor" d="M24.2015 35.65c0.5323 0 0.9818 -0.1838 1.3485 -0.5515s0.55 -0.8177 0.55 -1.35c0 -0.5323 -0.1838 -0.9818 -0.5515 -1.3485s-0.8177 -0.55 -1.35 -0.55c-0.5323 0 -0.9818 0.1838 -1.3485 0.5515s-0.55 0.8177 -0.55 1.35c0 0.5323 0.1838 0.9818 0.5515 1.3485s0.8177 0.55 1.35 0.55Zm-0.188 8.35c-2.758 0 -5.3497 -0.525 -7.775 -1.575 -2.4257 -1.05 -4.5468 -2.4833 -6.3635 -4.3 -1.81667 -1.8167 -3.25 -3.939 -4.3 -6.367C4.525 29.33 4 26.7357 4 23.975s0.525 -5.355 1.575 -7.783c1.05 -2.428 2.48333 -4.542 4.3 -6.342 1.8167 -1.8 3.939 -3.225 6.367 -4.275C18.67 4.525 21.2643 4 24.025 4s5.355 0.525 7.783 1.575c2.428 1.05 4.542 2.475 6.342 4.275 1.8 1.8 3.225 3.9167 4.275 6.35C43.475 18.6333 44 21.2288 44 23.9865c0 2.758 -0.525 5.3497 -1.575 7.775 -1.05 2.4257 -2.475 4.5438 -4.275 6.3545 -1.8 1.8103 -3.9167 3.2437 -6.35 4.3C29.3667 43.472 26.7712 44 24.0135 44Zm0.125 -29c1.0077 0 1.8948 0.3083 2.6615 0.925 0.7667 0.6167 1.15 1.4033 1.15 2.36 0 0.8767 -0.2608 1.6388 -0.7825 2.2865 -0.5217 0.6477 -1.1108 1.2572 -1.7675 1.8285 -0.7667 0.6333 -1.4333 1.3397 -2 2.119 -0.5667 0.7797 -0.85 1.6567 -0.85 2.631 0 0.3667 0.14 0.6583 0.42 0.875 0.28 0.2167 0.6067 0.325 0.98 0.325 0.4 0 0.7313 -0.1333 0.994 -0.4 0.2623 -0.2667 0.431 -0.6 0.506 -1 0.1 -0.7 0.3667 -1.3333 0.8 -1.9s0.9372 -1.0797 1.5115 -1.539c0.8257 -0.674 1.5052 -1.461 2.0385 -2.361 0.5333 -0.9 0.8 -1.8768 0.8 -2.9305 0 -1.6797 -0.625 -3.0778 -1.875 -4.1945 -1.25 -1.1167 -2.7325 -1.675 -4.4475 -1.675 -1.185 0 -2.3275 0.25 -3.4275 0.75s-2 1.2333 -2.7 2.2c-0.2333 0.3333 -0.3417 0.6917 -0.325 1.075 0.0167 0.3833 0.1745 0.6917 0.4735 0.925 0.3803 0.2667 0.7745 0.35 1.1825 0.25 0.4077 -0.1 0.7473 -0.3333 1.019 -0.7 0.425 -0.5967 0.9563 -1.0542 1.594 -1.3725 0.6373 -0.3183 1.3188 -0.4775 2.0445 -0.4775Z" stroke-width="1"></path>
+                </svg>
+              </span>
+            </button>
+          </Tooltip>
         <div className="w-px h-6 mx-1" style={{ backgroundColor: themeColors.border }}></div>
           <button
             onClick={handleMinimize}
