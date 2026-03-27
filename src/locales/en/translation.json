@@ -31,7 +31,8 @@
     "foundClients": "Found Clients",
     "openSteam": "Launch Steam",
     "openEpicGames": "Launch Epic Games",
-    "openEA": "Launch EA App"
+    "openEA": "Launch EA App",
+    "feedback": "Send Feedback"
   },
 
   "gameGrid": {

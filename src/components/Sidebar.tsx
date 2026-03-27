@@ -157,6 +157,17 @@ export default function Sidebar({ currentView, onViewChange, gameCounts, theme, 
         )}
 
       <div className="p-4 border-t" style={{ borderColor: themeColors.border }}>
+        <button
+          onClick={() => window.electronAPI.openUrlWindow('https://olympus.featurebase.app/')}
+          className="w-auto mx-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-transparent transition-all duration-300 hover:border-primary-500/50 hover:bg-primary-500/10 group mb-3"
+        >
+          <span className="transition-transform duration-300 group-hover:scale-110" style={{ color: themeColors.text }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-colors duration-300 group-hover:text-primary-400">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+            </svg>
+          </span>
+          <span className="text-xs font-medium transition-colors duration-300 group-hover:text-primary-400" style={{ color: themeColors.textSecondary }}>{t('sidebar.feedback')}</span>
+        </button>
         <p className="text-xs text-center" style={{ color: themeColors.textSecondary }}>
           {project.name} {t('app.version')}{project.version}
         </p>

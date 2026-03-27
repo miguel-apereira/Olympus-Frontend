@@ -8,10 +8,13 @@ import TitleBar from './components/TitleBar'
 import ScanProgressModal from './components/ScanProgressModal'
 import EditGameModal from './components/EditGameModal'
 import ChangelogModal from './components/ChangelogModal'
+import FeedbackView from './components/FeedbackView'
 import { TooltipProvider } from './components/Tooltip'
 import { GameInfo, ViewType, Settings } from './types'
 import { themes } from './config'
 import { changeLanguage } from './i18n'
+
+const isFeedbackWindow = window.location.hash.startsWith('#feedback')
 
 window.onerror = (message, source, lineno, colno, error) => {
   console.error('Global error:', message, source, lineno, colno, error)
@@ -22,6 +25,10 @@ window.onunhandledrejection = (event) => {
 }
 
 function App() {
+  if (isFeedbackWindow) {
+    return <FeedbackView />
+  }
+
   const { t } = useTranslation()
   const [games, setGames] = useState<GameInfo[]>([])
   const [currentView, setCurrentView] = useState<ViewType>('all')

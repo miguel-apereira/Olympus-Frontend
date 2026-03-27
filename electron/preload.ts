@@ -98,6 +98,7 @@ interface ElectronAPI {
   validateSteamGridDBKey: () => Promise<{ success: boolean; error?: string }>
   checkSteamGridDBStatus: () => Promise<{ initialized: boolean }>
   openExternal: (url: string) => Promise<{ success: boolean; error?: string }>
+  openUrlWindow: (url: string) => Promise<{ success: boolean; error?: string }>
 }
 
 const electronAPI: ElectronAPI = {
@@ -147,7 +148,8 @@ const electronAPI: ElectronAPI = {
   initSteamGridDB: (apiKey: string): Promise<{ success: boolean; error?: string }> => ipcRenderer.invoke('init-steamgriddb', apiKey),
   validateSteamGridDBKey: (): Promise<{ success: boolean; error?: string }> => ipcRenderer.invoke('validate-steamgriddb-key'),
   checkSteamGridDBStatus: (): Promise<{ initialized: boolean }> => ipcRenderer.invoke('check-steamgriddb-status'),
-  openExternal: (url: string): Promise<{ success: boolean; error?: string }> => ipcRenderer.invoke('open-external', url)
+  openExternal: (url: string): Promise<{ success: boolean; error?: string }> => ipcRenderer.invoke('open-external', url),
+  openUrlWindow: (url: string): Promise<{ success: boolean; error?: string }> => ipcRenderer.invoke('open-url-window', url)
 }
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI)
