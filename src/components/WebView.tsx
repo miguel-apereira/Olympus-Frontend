@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 import { themes, ThemeMode } from '../config'
-import { useTranslation } from 'react-i18next'
 
-export default function FeedbackView() {
+interface WebViewProps {
+  title: string
+  defaultUrl: string
+}
+
+export default function WebView({ title, defaultUrl }: WebViewProps) {
   const [theme, setTheme] = useState<ThemeMode>('dark')
   const [url, setUrl] = useState<string>('')
   const [error, setError] = useState<string>('')
   const [isMaximized, setIsMaximized] = useState(false)
   const themeColors = themes[theme]
-  const { t } = useTranslation()
 
   useEffect(() => {
     const checkMaximized = async () => {
@@ -22,9 +25,8 @@ export default function FeedbackView() {
     const hash = window.location.hash
     const queryString = hash.split('?')[1] || ''
     const params = new URLSearchParams(queryString)
-    const feedbackUrl = params.get('url') || 'https://olympus.featurebase.app/'
-    setUrl(feedbackUrl)
-    console.log('FeedbackView loading URL:', feedbackUrl)
+    const pageUrl = params.get('url') || defaultUrl
+    setUrl(pageUrl)
 
     const savedSettings = localStorage.getItem('olympus-settings')
     if (savedSettings) {
@@ -37,7 +39,7 @@ export default function FeedbackView() {
         // use default
       }
     }
-  }, [])
+  }, [defaultUrl])
 
   const handleClose = () => {
     window.electronAPI.windowClose()
@@ -62,7 +64,7 @@ export default function FeedbackView() {
         }}
       >
         <div style={{ WebkitAppRegion: 'drag' } as React.CSSProperties} className="flex-1">
-          <span className="text-sm font-medium pl-4" style={{ color: themeColors.text }}>{t('sidebar.feedback')}</span>
+          <span className="text-sm font-medium pl-4" style={{ color: themeColors.text }}>{title}</span>
         </div>
         <div style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties} className="flex items-center">
           <button
@@ -120,8 +122,8 @@ export default function FeedbackView() {
         src={url}
         className="flex-1 w-full border-none"
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-        title="Feedback"
-        onError={() => setError('Failed to load the feedback page')}
+        title={title}
+        onError={() => setError('Failed to load the page')}
       />
       {error && (
         <div className="flex-1 flex items-center justify-center" style={{ color: themeColors.text }}>

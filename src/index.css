@@ -86,10 +86,10 @@ body {
 }
 
 .animate-fade-in {
-  animation: tooltipFadeIn 0.1s ease-out;
+  animation: tooltipFadeInTop 0.1s ease-out;
 }
 
-@keyframes tooltipFadeIn {
+@keyframes tooltipFadeInTop {
   from {
     opacity: 0;
     transform: translate(-50%, -100%) scale(0.25);
@@ -97,6 +97,39 @@ body {
   to {
     opacity: 1;
     transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+@keyframes tooltipFadeInBottom {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.25);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@keyframes tooltipFadeInLeft {
+  from {
+    opacity: 0;
+    transform: translate(-100%, -50%) scale(0.25);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-100%, -50%) scale(1);
+  }
+}
+
+@keyframes tooltipFadeInRight {
+  from {
+    opacity: 0;
+    transform: translate(0, -50%) scale(0.25);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, -50%) scale(1);
   }
 }
 

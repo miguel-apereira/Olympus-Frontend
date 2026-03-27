@@ -775,9 +775,10 @@ ipcMain.handle('open-url-window', async (_, url: string) => {
       feedbackWindow.show()
     })
 
+    const hash = url.includes('featurebase.app/help') ? 'knowledgebase' : 'feedback'
     const baseUrl = VITE_DEV_SERVER_URL 
-      ? `${VITE_DEV_SERVER_URL}#feedback?url=${encodeURIComponent(url)}`
-      : `file://${path.join(__dirname, '../dist/index.html')}#feedback?url=${encodeURIComponent(url)}`
+      ? `${VITE_DEV_SERVER_URL}#${hash}?url=${encodeURIComponent(url)}`
+      : `file://${path.join(__dirname, '../dist/index.html')}#${hash}?url=${encodeURIComponent(url)}`
     
     await feedbackWindow.loadURL(baseUrl)
     return { success: true }

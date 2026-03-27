@@ -2,6 +2,12 @@
 
   "app": {
 
+    "titlebar": {
+      "settings": "Settings",
+      "knowledgeBase": "Knowledge Base"
+    },
+
+
     "header": {
       "games": "games",
       "game": "game"
@@ -87,7 +93,7 @@
     "onlyCoverEditable": "Only cover image can be changed for {{store}} games.",
     "browse": "Browse",
     "steamGridDB": "SteamGridDB",
-    "steamGridDBTooltip": "Download cover from SteamGridDB"
+    "steamGridDBTooltip": "Download from SteamGridDB"
   },
 
   "settings": {
