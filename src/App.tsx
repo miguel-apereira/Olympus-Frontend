@@ -398,6 +398,9 @@ function App() {
     '--color-border': themeColors.border,
     '--color-text': themeColors.text,
     '--color-text-secondary': themeColors.textSecondary,
+    '--color-scrollbar-track': settings.theme === 'dark' ? '#1a1a1a' : '#f5f5f5',
+    '--color-scrollbar-thumb': settings.theme === 'dark' ? '#333333' : '#d1d5db',
+    '--color-scrollbar-thumb-hover': settings.theme === 'dark' ? '#444444' : '#9ca3af',
   } as React.CSSProperties
 
   return (
