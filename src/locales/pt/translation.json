@@ -211,6 +211,17 @@
     "latestVersion": "O Olympus está atualizado!",
     "updateTryAgain": "Tentar novamente",
     "changelogButton": "Novidades"
+  },
+
+  "autoCover": {
+    "searching": "A procurar capa...",
+    "downloadingCovers": "A descarregar capas...",
+    "complete": "Pesquisa de capas concluída!",
+    "selectGameTitle": "Seleciona o jogo correto",
+    "selectGameDescription": "Foram encontradas várias correspondências para \"{{gameName}}\". Por favor, seleciona a correta:",
+    "verified": "Verificado",
+    "skip": "Saltar",
+    "noApiKey": "Chave API SteamGridDB não configurada. Por favor, adiciona uma nas Definições para ativar a descarga automática de capas."
   }
 
 }

@@ -212,6 +212,17 @@
     "latestVersion": "You're running the latest version!",
     "updateTryAgain": "Try Again",
     "changelogButton": "What's new"
+  },
+
+  "autoCover": {
+    "searching": "Searching for cover...",
+    "downloadingCovers": "Downloading covers...",
+    "complete": "Cover search complete!",
+    "selectGameTitle": "Select the correct game",
+    "selectGameDescription": "Multiple matches found for \"{{gameName}}\". Please select the correct one:",
+    "verified": "Verified",
+    "skip": "Skip",
+    "noApiKey": "No SteamGridDB API key configured. Please add one in Settings to enable automatic cover downloads."
   }
 
 }

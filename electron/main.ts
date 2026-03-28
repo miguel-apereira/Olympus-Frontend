@@ -284,6 +284,132 @@ ipcMain.handle('scan-games', async (event) => {
   }
 })
 
+interface AutoCoverResult {
+  gameId: string
+  gameName: string
+  status: 'downloaded' | 'needs-selection' | 'not-found' | 'error'
+  coverPath?: string
+  matches?: { id: number; name: string; verified: boolean }[]
+  error?: string
+}
+
+ipcMain.handle('auto-download-covers', async (event) => {
+  log.info('IPC: auto-download-covers called')
+  
+  const currentSettings = store.get('settings') as Settings
+  if (!currentSettings.integrations?.steamGridDBApiKey) {
+    log.info('No SteamGridDB API key configured')
+    return { success: false, error: 'no-api-key', results: [] }
+  }
+
+  if (!isClientInitialized()) {
+    log.info('SteamGridDB client not initialized, initializing now')
+    initSteamGridDB(currentSettings.integrations.steamGridDBApiKey)
+  }
+
+  const games = store.get('games') as GameInfo[]
+  const gamesNeedingCovers = games.filter(g => !g.coverImage)
+  
+  if (gamesNeedingCovers.length === 0) {
+    log.info('No games need covers')
+    return { success: true, results: [] }
+  }
+
+  log.info(`Auto-downloading covers for ${gamesNeedingCovers.length} games`)
+  const results: AutoCoverResult[] = []
+
+  for (const game of gamesNeedingCovers) {
+    try {
+      event.sender.send('auto-cover-progress', { gameName: game.name, status: 'searching' })
+      
+      let grids: Awaited<ReturnType<typeof getSteamGridDBGrids>> = []
+      let matches: { id: number; name: string; verified: boolean }[] = []
+
+      if (game.appid) {
+        grids = await getSteamGridDBGridsBySteamAppId(game.appid)
+        if (grids.length > 0) {
+          const coverPath = await downloadSteamGridDBCover(grids[0].url, game.id, app.getPath('userData'))
+          const updatedGames = store.get('games') as GameInfo[]
+          const gameIndex = updatedGames.findIndex(g => g.id === game.id)
+          if (gameIndex !== -1) {
+            updatedGames[gameIndex].coverImage = coverPath
+            store.set('games', updatedGames)
+          }
+          results.push({ gameId: game.id, gameName: game.name, status: 'downloaded', coverPath })
+          continue
+        }
+      }
+
+      matches = await searchSteamGridDB(game.name)
+      
+      if (matches.length === 0) {
+        results.push({ gameId: game.id, gameName: game.name, status: 'not-found' })
+        continue
+      }
+
+      const exactMatch = matches.find(m => isExactMatch(game.name, m.name))
+      if (exactMatch) {
+        const exactGrids = await getSteamGridDBGrids(exactMatch.id)
+        if (exactGrids.length > 0) {
+          const coverPath = await downloadSteamGridDBCover(exactGrids[0].url, game.id, app.getPath('userData'))
+          const updatedGames = store.get('games') as GameInfo[]
+          const gameIndex = updatedGames.findIndex(g => g.id === game.id)
+          if (gameIndex !== -1) {
+            updatedGames[gameIndex].coverImage = coverPath
+            store.set('games', updatedGames)
+          }
+          results.push({ gameId: game.id, gameName: game.name, status: 'downloaded', coverPath })
+          continue
+        }
+      }
+
+      results.push({ 
+        gameId: game.id, 
+        gameName: game.name, 
+        status: 'needs-selection',
+        matches: matches.slice(0, 10).map(m => ({ id: m.id, name: m.name, verified: m.verified }))
+      })
+
+    } catch (err) {
+      log.error(`Error auto-downloading cover for ${game.name}:`, err)
+      results.push({ 
+        gameId: game.id, 
+        gameName: game.name, 
+        status: 'error',
+        error: err instanceof Error ? err.message : 'Unknown error'
+      })
+    }
+  }
+
+  event.sender.send('auto-cover-progress', { status: 'complete' })
+  return { success: true, results }
+})
+
+ipcMain.handle('select-steamgriddb-game', async (_, gameId: string, steamGridDbGameId: number) => {
+  log.info('IPC: select-steamgriddb-game called', gameId, steamGridDbGameId)
+  
+  try {
+    const grids = await getSteamGridDBGrids(steamGridDbGameId)
+    if (grids.length === 0) {
+      return { success: false, error: 'No covers found' }
+    }
+
+    const coverPath = await downloadSteamGridDBCover(grids[0].url, gameId, app.getPath('userData'))
+    
+    const games = store.get('games') as GameInfo[]
+    const gameIndex = games.findIndex(g => g.id === gameId)
+    if (gameIndex !== -1) {
+      games[gameIndex].coverImage = coverPath
+      store.set('games', games)
+    }
+
+    return { success: true, coverPath }
+  } catch (err) {
+    log.error('Error selecting SteamGridDB game:', err)
+    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+  }
+})
+
 ipcMain.handle('add-game', async (_, game: Omit<GameInfo, 'id'>) => {
   log.info('IPC: add-game called', game.name)
   const games = store.get('games') as GameInfo[]

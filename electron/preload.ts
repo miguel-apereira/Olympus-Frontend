@@ -99,6 +99,9 @@ interface ElectronAPI {
   checkSteamGridDBStatus: () => Promise<{ initialized: boolean }>
   openExternal: (url: string) => Promise<{ success: boolean; error?: string }>
   openUrlWindow: (url: string) => Promise<{ success: boolean; error?: string }>
+  autoDownloadCovers: () => Promise<{ success: boolean; error?: string; results: { gameId: string; gameName: string; status: string; coverPath?: string; matches?: { id: number; name: string; verified: boolean }[]; error?: string }[] }>
+  selectSteamGridDBGame: (gameId: string, steamGridDbGameId: number) => Promise<{ success: boolean; coverPath?: string; error?: string }>
+  onAutoCoverProgress: (callback: (data: { gameName?: string; status: string }) => void) => () => void
 }
 
 const electronAPI: ElectronAPI = {
@@ -149,7 +152,14 @@ const electronAPI: ElectronAPI = {
   validateSteamGridDBKey: (): Promise<{ success: boolean; error?: string }> => ipcRenderer.invoke('validate-steamgriddb-key'),
   checkSteamGridDBStatus: (): Promise<{ initialized: boolean }> => ipcRenderer.invoke('check-steamgriddb-status'),
   openExternal: (url: string): Promise<{ success: boolean; error?: string }> => ipcRenderer.invoke('open-external', url),
-  openUrlWindow: (url: string): Promise<{ success: boolean; error?: string }> => ipcRenderer.invoke('open-url-window', url)
+  openUrlWindow: (url: string): Promise<{ success: boolean; error?: string }> => ipcRenderer.invoke('open-url-window', url),
+  autoDownloadCovers: (): Promise<{ success: boolean; error?: string; results: { gameId: string; gameName: string; status: string; coverPath?: string; matches?: { id: number; name: string; verified: boolean }[]; error?: string }[] }> => ipcRenderer.invoke('auto-download-covers'),
+  selectSteamGridDBGame: (gameId: string, steamGridDbGameId: number): Promise<{ success: boolean; coverPath?: string; error?: string }> => ipcRenderer.invoke('select-steamgriddb-game', gameId, steamGridDbGameId),
+  onAutoCoverProgress: (callback: (data: { gameName?: string; status: string }) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, data: { gameName?: string; status: string }) => callback(data)
+    ipcRenderer.on('auto-cover-progress', handler)
+    return () => ipcRenderer.removeListener('auto-cover-progress', handler)
+  }
 }
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI)

@@ -65,5 +65,8 @@ interface Window {
     checkSteamGridDBStatus: () => Promise<{ initialized: boolean }>
     openExternal: (url: string) => Promise<{ success: boolean; error?: string }>
     openUrlWindow: (url: string) => Promise<{ success: boolean; error?: string }>
+    autoDownloadCovers: () => Promise<{ success: boolean; error?: string; results: { gameId: string; gameName: string; status: string; coverPath?: string; matches?: { id: number; name: string; verified: boolean }[]; error?: string }[] }>
+    selectSteamGridDBGame: (gameId: string, steamGridDbGameId: number) => Promise<{ success: boolean; coverPath?: string; error?: string }>
+    onAutoCoverProgress: (callback: (data: { gameName?: string; status: string }) => void) => () => void
   }
 }

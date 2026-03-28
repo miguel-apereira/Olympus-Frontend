@@ -9,6 +9,7 @@ import ScanProgressModal from './components/ScanProgressModal'
 import EditGameModal from './components/EditGameModal'
 import ChangelogModal from './components/ChangelogModal'
 import WebView from './components/WebView'
+import AutoCoverModal, { GameSelectionModal } from './components/AutoCoverModal'
 import { TooltipProvider } from './components/Tooltip'
 import { GameInfo, ViewType, Settings } from './types'
 import { themes } from './config'
@@ -46,6 +47,9 @@ function App() {
   const [scanProgress, setScanProgress] = useState<{ current: number; total: number; currentGame: string; store: string } | null>(null)
   const [updateStatus, setUpdateStatus] = useState<{ status: string; version?: string; percent?: number; error?: string } | null>(null)
   const [showChangelog, setShowChangelog] = useState(false)
+  const [showAutoCoverModal, setShowAutoCoverModal] = useState(false)
+  const [needsSelection, setNeedsSelection] = useState<{ gameId: string; gameName: string; matches: { id: number; name: string; verified: boolean }[] } | null>(null)
+  const [coverDownloadStatus, setCoverDownloadStatus] = useState<{ isDownloading: boolean; gameName: string } | null>(null)
   const { t } = useTranslation()
   const themeColors = themes[settings.theme]
 
@@ -61,6 +65,18 @@ function App() {
           setIsScanning(false)
           setScanProgress(null)
         }, 1500)
+      }
+    })
+    return unsubscribe
+  }, [])
+
+  useEffect(() => {
+    const unsubscribe = window.electronAPI.onAutoCoverProgress((data) => {
+      if (data.status === 'searching' && data.gameName) {
+        setCoverDownloadStatus({ isDownloading: true, gameName: `Searching: ${data.gameName}` })
+      } else if (data.status === 'complete') {
+        setCoverDownloadStatus({ isDownloading: false, gameName: 'Covers downloaded!' })
+        setTimeout(() => setCoverDownloadStatus(null), 3000)
       }
     })
     return unsubscribe
@@ -120,21 +136,58 @@ function App() {
       setSettings(settingsWithDefaults)
 
       if (settingsWithDefaults.scanOnStartup) {
-        await scanForGames()
+        await scanForGames(false)
+        
+        setTimeout(async () => {
+          const coverResult = await window.electronAPI.autoDownloadCovers()
+          if (coverResult.success && coverResult.results.length > 0) {
+            const downloadedCount = coverResult.results.filter(r => r.status === 'downloaded').length
+            if (downloadedCount > 0) {
+              setCoverDownloadStatus({ isDownloading: false, gameName: `${downloadedCount} cover${downloadedCount > 1 ? 's' : ''} downloaded` })
+              setTimeout(() => setCoverDownloadStatus(null), 5000)
+            }
+            const refreshedGames = await window.electronAPI.getGames()
+            setGames(refreshedGames)
+          }
+        }, 1000)
       }
-    } catch (error) {
-      console.error('Error loading data:', error)
-      setError(String(error))
+    } catch (err) {
+      console.error('Error loading data:', err)
+      setError(String(err))
     } finally {
       setIsLoading(false)
     }
   }
 
-  const scanForGames = async () => {
+  const handleManualScan = async () => {
+    await scanForGames(true)
+  }
+
+  const scanForGames = async (showCoverModal = false) => {
     setIsScanning(true)
     try {
       const result = await window.electronAPI.scanGames()
       setGames(result.games)
+      
+      if (showCoverModal) {
+        setShowAutoCoverModal(true)
+        const coverResult = await window.electronAPI.autoDownloadCovers()
+        if (coverResult.success && coverResult.results.length > 0) {
+          const needsSelectionResult = coverResult.results.find(r => r.status === 'needs-selection')
+          if (needsSelectionResult && needsSelectionResult.matches) {
+            setNeedsSelection({
+              gameId: needsSelectionResult.gameId,
+              gameName: needsSelectionResult.gameName,
+              matches: needsSelectionResult.matches!
+            })
+          }
+          if (coverResult.results.some(r => r.status === 'downloaded' || r.status === 'needs-selection')) {
+            const refreshedGames = await window.electronAPI.getGames()
+            setGames(refreshedGames)
+          }
+        }
+        setShowAutoCoverModal(false)
+      }
     } catch (error) {
       console.error('Error scanning games:', error)
     } finally {
@@ -408,6 +461,26 @@ function App() {
         </div>
       )}
 
+      {coverDownloadStatus && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div 
+            className="relative p-6 rounded-xl shadow-2xl max-w-sm w-full mx-4"
+            style={{ backgroundColor: themes[settings.theme].surface }}
+          >
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-center font-medium" style={{ color: themes[settings.theme].text }}>
+                {t('autoCover.downloadingCovers')}
+              </p>
+              <p className="text-sm" style={{ color: themes[settings.theme].textSecondary }}>
+                {coverDownloadStatus.gameName}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-1 overflow-hidden">
         <Sidebar 
           currentView={currentView}
@@ -434,7 +507,7 @@ function App() {
             <SettingsView 
               settings={settings}
               onSave={handleSaveSettings}
-              onScanGames={scanForGames}
+              onScanGames={handleManualScan}
               isScanning={isScanning}
               onRefreshGames={async () => {
                 const games = await window.electronAPI.getGames()
@@ -509,7 +582,7 @@ function App() {
                 onEdit={setEditingGame}
                 isEmpty={filteredGames.length === 0}
                 isScanning={isScanning}
-                onScan={scanForGames}
+                onScan={handleManualScan}
                 themeColors={themeColors}
                 showStoreOnGameCard={settings.showStoreOnGameCard ?? true}
               />
@@ -544,6 +617,39 @@ function App() {
           onClose={() => setShowChangelog(false)}
           version={updateStatus?.version}
         />
+
+        <AutoCoverModal
+          isOpen={showAutoCoverModal}
+          onClose={() => {
+            setShowAutoCoverModal(false)
+            setNeedsSelection(null)
+          }}
+          theme={settings.theme}
+          needsSelection={needsSelection}
+          onSelectGame={(gameId, matches) => {
+            setNeedsSelection({ gameId, gameName: '', matches })
+          }}
+        />
+
+        {needsSelection && (
+          <GameSelectionModal
+            isOpen={!!needsSelection}
+            gameName={needsSelection.gameName}
+            matches={needsSelection.matches}
+            onSelect={async (steamGridDbGameId) => {
+              await window.electronAPI.selectSteamGridDBGame(needsSelection.gameId, steamGridDbGameId)
+              const refreshedGames = await window.electronAPI.getGames()
+              setGames(refreshedGames)
+              setNeedsSelection(null)
+              setShowAutoCoverModal(false)
+            }}
+            onSkip={() => {
+              setNeedsSelection(null)
+              setShowAutoCoverModal(false)
+            }}
+            theme={settings.theme}
+          />
+        )}
       </div>
     </TooltipProvider>
   )
