@@ -1,20 +1,25 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { GameInfo } from '../types'
-import { project } from '../config'
+import { project, ThemeMode, themes } from '../config'
+import SteamGridDBModal from './SteamGridDBModal'
+import { Tooltip } from './Tooltip'
 
 interface AddGameModalProps {
   onClose: () => void
   onAdd: (game: Omit<GameInfo, 'id'>) => void
+  theme: ThemeMode
 }
 
-export default function AddGameModal({ onClose, onAdd }: AddGameModalProps) {
+export default function AddGameModal({ onClose, onAdd, theme }: AddGameModalProps) {
   const { t } = useTranslation()
+  const themeColors = themes[theme]
   const [name, setName] = useState('')
   const [executablePath, setExecutablePath] = useState('')
   const [coverImage, setCoverImage] = useState('')
   const [store] = useState<typeof project.supportedStores[number]>('custom')
   const [isLoading, setIsLoading] = useState(false)
+  const [showSteamGridDB, setShowSteamGridDB] = useState(false)
 
   const handleSelectExecutable = async () => {
     const path = await window.electronAPI.selectExecutable()
@@ -32,6 +37,11 @@ export default function AddGameModal({ onClose, onAdd }: AddGameModalProps) {
     if (path) {
       setCoverImage(path)
     }
+  }
+
+  const handleCoverSelected = (coverPath: string) => {
+    setCoverImage(coverPath)
+    setShowSteamGridDB(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +63,7 @@ export default function AddGameModal({ onClose, onAdd }: AddGameModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/70 modal-overlay flex items-center justify-center z-50">
-      <div className="bg-theme-surface border border-theme-border rounded-2xl w-full max-w-md mx-4 overflow-hidden fade-in">
+      <div className="bg-theme-surface border border-theme-border rounded-2xl w-full max-w-xl mx-4 overflow-hidden fade-in">
         <div className="flex items-center justify-between px-6 py-4 border-b border-theme-border">
           <h2 className="text-lg font-semibold text-theme-text">{t('addGame.title')}</h2>
           <button
@@ -77,8 +87,10 @@ export default function AddGameModal({ onClose, onAdd }: AddGameModalProps) {
               onChange={(e) => setName(e.target.value)}
               placeholder={t('addGame.gameNamePlaceholder')}
               className="w-full px-4 py-2 bg-theme-bg border border-theme-border rounded-lg text-theme-text placeholder-theme-textSecondary"
-              required
             />
+            <p className="text-xs mt-1" style={{ color: themeColors.textSecondary }}>
+              {t('addGame.gameNameAutoFill')}
+            </p>
           </div>
 
           <div>
@@ -123,6 +135,15 @@ export default function AddGameModal({ onClose, onAdd }: AddGameModalProps) {
               >
                 {t('addGame.browse')}
               </button>
+              <Tooltip text={t('editGame.steamGridDBTooltip')}>
+                <button
+                  type="button"
+                  onClick={() => setShowSteamGridDB(true)}
+                  className="px-4 py-2 bg-theme-card border border-theme-border rounded-lg text-primary-500 hover:bg-theme-border transition-colors"
+                >
+                  {t('editGame.steamGridDB')}
+                </button>
+              </Tooltip>
             </div>
           </div>
 
@@ -136,7 +157,7 @@ export default function AddGameModal({ onClose, onAdd }: AddGameModalProps) {
             </button>
             <button
               type="submit"
-              disabled={isLoading || !name || !executablePath}
+              disabled={isLoading || !executablePath}
               className="flex-1 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 text-white rounded-lg transition-colors"
             >
               {isLoading ? t('addGame.adding') : t('addGame.addGame')}
@@ -144,6 +165,16 @@ export default function AddGameModal({ onClose, onAdd }: AddGameModalProps) {
           </div>
         </form>
       </div>
+
+      {showSteamGridDB && (
+        <SteamGridDBModal
+          gameName={name || executablePath.split('\\').pop()?.replace('.exe', '') || ''}
+          gameId="new-game"
+          theme={theme}
+          onClose={() => setShowSteamGridDB(false)}
+          onCoverSelected={handleCoverSelected}
+        />
+      )}
     </div>
   )
 }

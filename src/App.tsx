@@ -598,6 +598,7 @@ function App() {
         <AddGameModal
           onClose={() => setShowAddModal(false)}
           onAdd={handleAddGame}
+          theme={settings.theme}
         />
       )}
 

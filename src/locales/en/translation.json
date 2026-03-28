@@ -73,6 +73,7 @@
     "title": "Add Game",
     "gameName": "Game Name",
     "gameNamePlaceholder": "Enter game name",
+    "gameNameAutoFill": "If left empty, will be auto-filled based on the .exe name",
     "executablePath": "Executable Path",
     "executablePathPlaceholder": "C:\\Games\\game.exe",
     "coverImage": "Cover Image (optional)",
