@@ -125,6 +125,7 @@ function App() {
         hardwareAcceleration: loadedSettings?.hardwareAcceleration ?? true,
         language: loadedSettings?.language || 'en',
         showStoreOnGameCard: loadedSettings?.showStoreOnGameCard ?? true,
+        autoDownloadCovers: loadedSettings?.autoDownloadCovers ?? true,
         integrations: loadedSettings?.integrations
       }
       
@@ -138,18 +139,20 @@ function App() {
       if (settingsWithDefaults.scanOnStartup) {
         await scanForGames(false)
         
-        setTimeout(async () => {
-          const coverResult = await window.electronAPI.autoDownloadCovers()
-          if (coverResult.success && coverResult.results.length > 0) {
-            const downloadedCount = coverResult.results.filter(r => r.status === 'downloaded').length
-            if (downloadedCount > 0) {
-              setCoverDownloadStatus({ isDownloading: false, gameName: `${downloadedCount} cover${downloadedCount > 1 ? 's' : ''} downloaded` })
-              setTimeout(() => setCoverDownloadStatus(null), 5000)
+        if (settingsWithDefaults.autoDownloadCovers) {
+          setTimeout(async () => {
+            const coverResult = await window.electronAPI.autoDownloadCovers()
+            if (coverResult.success && coverResult.results.length > 0) {
+              const downloadedCount = coverResult.results.filter(r => r.status === 'downloaded').length
+              if (downloadedCount > 0) {
+                setCoverDownloadStatus({ isDownloading: false, gameName: `${downloadedCount} cover${downloadedCount > 1 ? 's' : ''} downloaded` })
+                setTimeout(() => setCoverDownloadStatus(null), 5000)
+              }
+              const refreshedGames = await window.electronAPI.getGames()
+              setGames(refreshedGames)
             }
-            const refreshedGames = await window.electronAPI.getGames()
-            setGames(refreshedGames)
-          }
-        }, 1000)
+          }, 1000)
+        }
       }
     } catch (err) {
       console.error('Error loading data:', err)
@@ -169,7 +172,7 @@ function App() {
       const result = await window.electronAPI.scanGames()
       setGames(result.games)
       
-      if (showCoverModal) {
+      if (showCoverModal && settings.autoDownloadCovers) {
         setShowAutoCoverModal(true)
         const coverResult = await window.electronAPI.autoDownloadCovers()
         if (coverResult.success && coverResult.results.length > 0) {

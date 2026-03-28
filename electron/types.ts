@@ -19,6 +19,7 @@ export interface Settings {
   hardwareAcceleration: boolean
   language?: string
   showStoreOnGameCard?: boolean
+  autoDownloadCovers?: boolean
   integrations?: {
     steamGridDBApiKey?: string
   }

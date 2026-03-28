@@ -105,6 +105,8 @@
         "library": "Biblioteca",
         "scanOnStartup": "Procurar jogos no arranque",
         "scanOnStartupDescription": "Se ativado, o Olympus irá procurar por jogos instalados no teu computador cada vez que o iniciares.",
+        "autoDownloadCovers": "Descarregar capas automáticamente",
+        "autoDownloadCoversDescription": "Descarregar capas de jogos automaticamente do SteamGridDB ao procurar por jogos.",
         "manualScan": "Procura Manual",
         "manualScanDescription": "Procura por jogos instalados no teu computador através da Steam, Epic Games e EA App. Jogos instalados manualmente, devem ser adicionados ao Olympus manualmente.",
         "hardwareAcceleration": "Aceleração de Hardware",

@@ -151,6 +151,31 @@ export default function SettingsView({ settings, onSave, onScanGames, isScanning
                   </button>
                 </div>
 
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium" style={{ color: themeColors.text }}>{t('settings.tabs.application.autoDownloadCovers')}</p>
+                    <p className="text-sm" style={{ color: themeColors.textSecondary }}>{t('settings.tabs.application.autoDownloadCoversDescription')}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const newSettings = { ...localSettings, autoDownloadCovers: !localSettings.autoDownloadCovers }
+                      setLocalSettings(newSettings)
+                      onSave(newSettings)
+                    }}
+                    className={`relative inline-flex w-11 h-6 flex-shrink-0 rounded-full transition-colors cursor-pointer ${
+                      localSettings.autoDownloadCovers ? 'bg-primary-600' : ''
+                    }`}
+                    style={{ backgroundColor: localSettings.autoDownloadCovers ? undefined : themeColors.border }}
+                    type="button"
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform shadow-sm ${
+                        localSettings.autoDownloadCovers ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
                 <div>
                   <p className="font-medium mb-2" style={{ color: themeColors.text }}>{t('settings.tabs.application.manualScan')}</p>
                   <p className="text-sm mb-3" style={{ color: themeColors.textSecondary }}>

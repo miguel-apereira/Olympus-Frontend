@@ -106,6 +106,8 @@
         "library": "Library",
         "scanOnStartup": "Scan on startup",
         "scanOnStartupDescription": "Automatically scan for new games when the app launches",
+        "autoDownloadCovers": "Download game covers automatically",
+        "autoDownloadCoversDescription": "Automatically download game covers from SteamGridDB when scanning for games.",
         "manualScan": "Manual Scan",
         "manualScanDescription": "Scan your computer for installed games from Steam, Epic Games, and EA.",
         "hardwareAcceleration": "Hardware Acceleration",
